@@ -6,7 +6,7 @@ from lxml.isoschematron import Schematron  # ← VIGTIG
 
 from . import ValidationError
 
-sch_path = files("lerxml") / "schematron" / "Elledning.sch"
+sch_path = files("lerxml") / "schematron" / "2.2_ler.sch"
 
 
 def validate_sch_element(elm: _Element) -> list[ValidationError]:
@@ -30,7 +30,8 @@ def validate_sch_element(elm: _Element) -> list[ValidationError]:
         message = " ".join(message.split())
 
         location = failed.get("location")
-        rule = failed.get("id") or failed.get("test")
+        rule = failed.get("id")
+        assert rule is not None, "Alle sch:assert skal have id-attribut"
 
         errors.append(
             ValidationError(

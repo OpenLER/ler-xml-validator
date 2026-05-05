@@ -20,28 +20,32 @@
       <sch:let name="hasUnknownZ"
                value=".//ler:geometri//*[contains(concat(' ', normalize-space(.), ' '), ' -99 ')]"/>
 
-      <sch:assert test="not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'">
+      <sch:assert id="spændingsniveauMåleenhedsrestriktion"
+                  test="not(ler:spaendingsniveau[not(@uom = 'kV')])">
         Måleenheden for spændingsniveauet skal være kV.
       </sch:assert>
 
-      <sch:assert test="not($afterCutoff) or ler:udvendigDiameter">
+      <sch:assert id="udvendigDiameterBetingelse"
+                  test="not($afterCutoff) or ler:udvendigDiameter">
         Den udvendige diameter skal være angivet hvis etableringstidspunktet er efter skæringsdatoen.
       </sch:assert>
 
-      <sch:assert test="not($afterCutoff and $hasUnknownZ) or ler:vejledendeDybde">
+      <sch:assert id="vejledendeDybdeBetingelse"
+                  test="not($afterCutoff and $hasUnknownZ) or ler:vejledendeDybde">
         Den vejledende dybde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen
         og de vertikale koordinater i geometrien er ukendt-værdien -99.
       </sch:assert>
 
-      <sch:assert test="
-        not(
-          $afterCutoff
-          and ler:ejerskabsforhold = 'ejet af udleverende ledningsejer'
-          and not(ler:driftsstatus = 'under etablering')
-          and $hasUnknownZ
-          and ler:vejledendeDybde/@xsi:nil = 'true'
-        )
-      ">
+      <sch:assert id="vejledendeDybdeVoidrestriktion"
+                  test="
+                    not(
+                      $afterCutoff
+                      and ler:ejerskabsforhold = 'ejet af udleverende ledningsejer'
+                      and not(ler:driftsstatus = 'under etablering')
+                      and $hasUnknownZ
+                      and ler:vejledendeDybde/@xsi:nil = 'true'
+                    )
+                  ">
         Den vejledende dybde må ikke være void hvis betingelserne er opfyldt.
       </sch:assert>
 
