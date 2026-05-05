@@ -1,0 +1,89 @@
+from lxml.etree import _Element
+
+from lerxml.constraints.helpers import before_cutoff
+from . import ValidationError
+
+@rule('Elledning.driftsstatusVoidrestriktion')
+def driftsstatusVoidrestriktion(feat: _Element) -> list[ValidationError]:
+    """
+    Driftsstatussen må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+    """
+    errors = []
+
+    if before_cutoff(feat):
+        return errors
+
+    driftsstatus = feat.find("ler:driftsstatus", namespaces='ler')
+    if driftsstatus is None:
+        errors.append(ValidationError(
+            field="driftsstatus",
+            message="driftsstatus må ikke være void hvis etableringstidspunktet er efter skæringsdatoen"
+        ))
+
+    return errors
+
+# - feature_type: Ledning
+#   name: driftsstatusVoidrestriktion
+#   expression: |
+#     Driftsstatussen må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+
+# - feature_type: Ledning
+#   name: fareklasseVoidrestriktion
+#   expression: |
+#     Fareklassen må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+
+# - feature_type: Ledning
+#   name: geometriBetingelse
+#   expression: |
+#     Geometrien skal være angivet hvis alle følgende betingelser er sande:
+#     - ledningen er ikke indeholdt i et ledningstracé
+#     - ledningen er ikke indeholdt i en anden ledning
+
+# - feature_type: Ledning
+#   name: geometriDatatypeRestriktion
+#   expression: |
+#     Geometrien skal anvende lineær interpolation.
+#     Note: I en GML-indkodning betyder det, at geometrien, som er en kurve,
+#     skal have en geometritype der er en af følgende [GML SF]:
+#     - gml:LineString
+#     - gml:Curve med segmenter af typen gml:LineStringSegment
+
+# - feature_type: Ledning
+#   name: nøjagtighedsklasseBetingelse
+#   expression: |
+#     Nøjagtighedsklassen for den horisontale placering skal være angivet hvis geometrien er angivet.
+#     Nøjagtighedsklassen for den horisontale placering må ikke være angivet hvis geometrien ikke er angivet.
+
+# - feature_type: Ledning
+#   name: nøjagtighedsklasseVertikalBetingelse
+#   expression: |
+#     Nøjagtighedsklassen for den vertikale placering skal være angivet hvis geometrien er angivet.
+#     Nøjagtighedsklassen for den vertikale placering må ikke være angivet hvis geometrien ikke er angivet.
+
+# - feature_type: Ledning
+#   name: nøjagtighedsklasseVertikalVoidrestriktion
+#   expression: |
+#     Nøjagtighedsklassen for den vertikale placering må ikke være void hvis alle følgende betingelser er sande:
+#     - etableringstidspunktet er efter skæringsdatoen
+#     - ejerskabsforholdet er ejet af udleverende ledningsejer
+
+# - feature_type: Ledning
+#   name: nøjagtighedsklasseVoidrestriktion
+#   expression: |
+#     Nøjagtighedsklassen for den horisontale placering må ikke være void hvis alle følgende betingelser er sande:
+#     - etableringstidspunktet er efter skæringsdatoen
+#     - ejerskabsforholdet er ejet af udleverende ledningsejer
+
+# - feature_type: Ledning
+#   name: udvendigDiameterMåleenhedsrestriktion
+#   expression: |
+#     Måleenheden for den udvendige diameter skal være millimeter.
+#     Millimeter skal angives med symbolet mm [UCUM].
+
+# - feature_type: Ledning
+#   name: udvendigDiameterVoidrestriktion
+#   expression: |
+#     Den udvendige diameter må ikke være void hvis alle følgende betingelser er sande:
+#     - etableringstidspunktet er efter skæringsdatoen
+#     - ejerskabsforholdet er ejet af udleverende ledningsejer
+#     - driftsstatussen er ikke under etablering

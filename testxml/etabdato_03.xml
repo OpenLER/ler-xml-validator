@@ -1,0 +1,25 @@
+<ler:Elledning
+    xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    gml:id="elledning-001">
+
+  <ler:driftsstatus>i drift</ler:driftsstatus>
+  <ler:etableringstidspunkt>
+    vrøvl
+  </ler:etableringstidspunkt>
+  <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+  <ler:geometri>
+    <gml:LineString srsName="EPSG:25832">
+      <gml:posList>
+        700000 6200000
+        700010 6200010
+      </gml:posList>
+    </gml:LineString>
+  </ler:geometri>
+
+  <ler:type>vejbelysningskabel</ler:type>
+
+
+</ler:Elledning>

@@ -1,0 +1,14 @@
+kind: Elledning
+id: elledning-001
+
+driftsstatus: i drift
+etableringstidspunkt: 2024-01-01
+fareklasse: ikke farlig
+type: vejbelysningskabel
+
+geometri:
+  type: LineString
+  srsName: EPSG:25832
+  coordinates:
+    - [700000, 6200000]
+    - [700010, 6200010]

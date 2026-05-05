@@ -1,0 +1,13 @@
+<ler:Elledning
+    xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    gml:id="elledning-001">
+
+  <ler:driftsstatus>i drift</ler:driftsstatus>
+  <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+  <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+  <ler:type>vejbelysningskabel</ler:type>
+
+</ler:Elledning>

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lerxml"
+version = "0.1.0"
+description = "Tools for parsing and validating LER XML"
+authors = [
+    { name = "Your Name" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "lxml",
+    "xmlschema",
+    "pyyaml"
+]
+
+[project.scripts]
+lerxml-validate-xsd = "lerxml.cli:validate_xsd"
+lerxml-validate-sch = "lerxml.cli:validate_sch"
+lerxml-validate-con = "lerxml.cli:validate_con"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100

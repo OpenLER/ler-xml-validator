@@ -1,0 +1,22 @@
+<ler:Elledning
+    xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    gml:id="42">
+
+  <ler:driftsstatus>nonsense</ler:driftsstatus>
+  <ler:etableringstidspunkt>not-a-date</ler:etableringstidspunkt>
+  <ler:fareklasse>very dangerous</ler:fareklasse>
+
+  <ler:geometri>
+    <gml:LineString srsName="EPSG:25832">
+      <gml:posList>
+        700000 6200000
+        bad-coordinate 6200010
+      </gml:posList>
+    </gml:LineString>
+  </ler:geometri>
+
+  <ler:type>not-a-cable-type</ler:type>
+
+</ler:Elledning>
