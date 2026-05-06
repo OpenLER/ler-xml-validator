@@ -14,7 +14,9 @@ requires-python = ">=3.10"
 dependencies = [
     "lxml",
     "xmlschema",
-    "pyyaml"
+    "pyyaml",
+    "pyschematron @ git+https://github.com/velle/pyschematron.git@svrl-with-id",
+
 ]
 
 [project.scripts]
