@@ -1,3 +1,4 @@
+<!-- after cut off -->
 <ler:Elledning
     xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
     xmlns:gml="http://www.opengis.net/gml/3.2"
@@ -5,7 +6,7 @@
     gml:id="elledning-001">
 
   <ler:driftsstatus>i drift</ler:driftsstatus>
-  <ler:etableringstidspunkt>2022-01-01</ler:etableringstidspunkt>
+  <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
   <ler:fareklasse>ikke farlig</ler:fareklasse>
 
   <ler:geometri>
@@ -18,6 +19,9 @@
   </ler:geometri>
 
   <ler:type>vejbelysningskabel</ler:type>
+
+  <ler:udvendigDiameter uom="mm">20</ler:udvendigDiameter>
+  <ler:spaendingsniveau uom="kV">0.4</ler:spaendingsniveau>
 
 
 </ler:Elledning>

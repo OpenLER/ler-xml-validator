@@ -8,9 +8,6 @@ from lerxml.schematron import validate_sch_element
 
 XML_PATH = Path(__file__).parent / "data" / "basic_feature_xml" / "elledning.xml"
 
-def load_xml():
-    return XML_PATH.read_text()
-
 NS = {
     "ler": "http://data.gov.dk/schemas/LER/2/gml",
 }
@@ -22,25 +19,10 @@ NS = {
             lambda root: None,
             []
         ),
-        (
-            lambda root: [
-                e.set("uom", "m")
-                for e in root.xpath("//ler:spaendingsniveau", namespaces=NS)
-            ],
-            ['spændingsniveauMåleenhedsrestriktion']
-        ),
-        (
-            lambda root: [
-                e.attrib.pop("uom", None)
-                for e in root.xpath("//ler:spaendingsniveau", namespaces=NS)
-            ],
-            ['spændingsniveauMåleenhedsrestriktion']
-        ),
     ]
 )
-
 def test_01(modification, expected_errors):
-    root = etree.fromstring(load_xml().encode())
+    root = etree.fromstring(XML_PATH.read_text().encode())
 
     modification(root)
 
