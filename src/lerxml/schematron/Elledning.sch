@@ -1,24 +1,45 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <sch:schema
+    queryBinding="xslt2"
     xmlns:sch="http://purl.oclc.org/dsdl/schematron"
     xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
     xmlns:gml="http://www.opengis.net/gml/3.2"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <sch:ns prefix="ler" uri="http://data.gov.dk/schemas/LER/2/gml"/>
   <sch:ns prefix="gml" uri="http://www.opengis.net/gml/3.2"/>
   <sch:ns prefix="xsi" uri="http://www.w3.org/2001/XMLSchema-instance"/>
+  <sch:ns prefix="xs" uri="http://www.w3.org/2001/XMLSchema"/>
 
   <sch:pattern id="Elledning">
 
     <sch:rule context="ler:Elledning">
 
-      <sch:let name="afterCutoff"
-               value="number(translate(substring(ler:etableringstidspunkt, 1, 10), '-', '')) &gt; 20230701"/>
+      <sch:let name="etableringsdato"
+              value="
+                if (substring(string(ler:etableringstidspunkt), 1, 10) castable as xs:date)
+                then xs:date(substring(string(ler:etableringstidspunkt), 1, 10))
+                else xs:date('0001-01-01')
+              "/>
 
-      <!-- NB: simpel XPath 1.0-tilnærmelse: finder -99 som token i geometrien -->
+      <sch:let name="afterCutoff"
+              value="$etableringsdato gt xs:date('2023-07-01')"/>
+
+
+      <sch:let name="is2D"
+              value="exists(.//ler:geometri//*[@srsDimension = '2'])"/>
+
+      <sch:let name="hasMinus99"
+                value="
+                  some $n in tokenize(
+                    normalize-space(string-join(.//ler:geometri//*[self::gml:pos or self::gml:posList]/text(), ' ')),
+                    '\s+'
+                  )
+                  satisfies $n = '-99'
+                "/>
+
       <sch:let name="hasUnknownZ"
-               value=".//ler:geometri//*[contains(concat(' ', normalize-space(.), ' '), ' -99 ')]"/>
+              value="$is2D or $hasMinus99"/>
 
       <sch:assert id="spændingsniveauMåleenhedsrestriktion"
                   test="not(ler:spaendingsniveau[not(@uom = 'kV')])">
