@@ -1,0 +1,4 @@
+- id: do-nothing
+  z_mode: xyz0
+  xquery: ()
+  expected_errors: []

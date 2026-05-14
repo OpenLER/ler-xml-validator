@@ -1,0 +1,16 @@
+- id: elledning_aco-do-nothing
+  xquery: ()
+  expected_errors: []
+
+- id: elledning_aco-vejledendedybde-01
+  z_mode: xyz99
+  xquery: |
+    replace value of node $doc/ler:Elledning/ler:etableringstidspunkt with "2024-01-01",
+    delete node $doc/ler:Elledning/ler:vejledendeDybde
+  expected_errors:
+    - vejledendeDybdeBetingelse
+
+- id: elledning_aco-spændingsniveauMåleenhedsrestriktion
+  xquery: delete node $doc/ler:Elledning/ler:spaendingsniveau/@uom
+  expected_errors:
+    - spændingsniveauMåleenhedsrestriktion
