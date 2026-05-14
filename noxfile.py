@@ -5,4 +5,4 @@ import nox
 def tests(session):
     session.install("pytest")
     session.install("-e", ".")
-    session.run("pytest", "tests2")
+    session.run("pytest", "tests")
