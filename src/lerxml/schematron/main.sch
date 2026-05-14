@@ -11,6 +11,7 @@
   <!-- Prefixes used in rule contexts/tests -->
   <ns prefix="ler" uri="http://data.gov.dk/schemas/LER/2/gml"/>
   <ns prefix="gml" uri="http://www.opengis.net/gml/3.2"/>
+  <ns prefix="xsi" uri="http://www.w3.org/2001/XMLSchema-instance"/>
 
   <!-- Common abstract rules / shared helpers -->
   <include href="common.sch"/>

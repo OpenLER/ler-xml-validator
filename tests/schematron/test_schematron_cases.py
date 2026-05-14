@@ -14,7 +14,7 @@ CASES_DIR = HERE / "cases"
 
 DUMP_DIR = HERE / "dumped_xml"
 
-SCHEMATRON_PATH = Path("src/lerxml/schematron/2.2_ler.sch")
+SCHEMATRON_PATH = Path("src/lerxml/schematron/main.sch")
 
 XQUERY_NAMESPACES = """
 declare namespace ler = "http://data.gov.dk/schemas/LER/2/gml";
@@ -186,9 +186,21 @@ def test_schematron_case(xml_path: Path, case: dict[str, Any]) -> None:
     )
     svrl = result.get_svrl()
 
+    dump_path = DUMP_DIR / f"{safe_id}.svrl"
+
+    dump_path.write_bytes(
+        etree.tostring(
+            svrl,
+            pretty_print=True,
+            xml_declaration=True,
+            encoding="utf-8",
+        )
+    )
+
+
     error_ids = [
         elem.get("id")
         for elem in svrl.findall(".//svrl:failed-assert", SVRL_NS)
     ]
 
-    assert error_ids == case.get("expected_errors", [])
+    assert set(error_ids) == set(case.get("expected_errors", []))

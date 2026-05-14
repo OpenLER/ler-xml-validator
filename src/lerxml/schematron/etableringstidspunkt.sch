@@ -2,6 +2,7 @@
 
 <pattern
     xmlns="http://purl.oclc.org/dsdl/schematron"
+    xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     id="etableringstidspunkt-rules">
 
@@ -14,14 +15,13 @@
          value="exists(@indeterminatePosition)"/>
 
     <let name="isYear"
-         value="matches($v, '^\d{4}$')"/>
+        value="matches($v, '^[0-9]{4}$')"/>
 
     <let name="isYearMonth"
-         value="matches($v, '^\d{4}-\d{2}$')"/>
+        value="matches($v, '^[0-9]{4}-[0-9]{2}$')"/>
 
     <let name="isDate"
-         value="matches($v, '^\d{4}-\d{2}-\d{2}$')"/>
-
+        value="matches($v, '^[0-9]{4}-[0-9]{2}-[0-9]{2}$')"/>
 
     <!-- ========================================================== -->
     <!-- Basic format                                                -->
@@ -107,8 +107,10 @@
     <!-- 2023-07-02+ must not use indeterminatePosition -->
 
     <assert id="LER-ETAB-008"
-            test="not($isDate and xs:date($v) ge xs:date('2023-07-02'))
-                  or not($hasIndeterminate)">
+            test="if ($isDate)
+                  then xs:date($v) lt xs:date('2023-07-02')
+                      or not($hasIndeterminate)
+                  else true()">
       YYYY-MM-DD værdier fra og med 2023-07-02 må ikke anvende indeterminatePosition.
     </assert>
 
