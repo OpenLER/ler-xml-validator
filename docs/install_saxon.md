@@ -57,13 +57,13 @@ chmod +x ~/.local/bin/schxslt
 
 ## Test with saxon
 
-export SVRL=~/a/schxslt/core/target/xslt-only/2.0/compile-for-svrl.xsl
+export SCH_TO_XSL=~/a/schxslt/core/target/xslt-only/2.0/compile-for-svrl.xsl
 
 Now compile to no_comments.xsl:
 
 ```sh
 saxon \
-  -xsl:$SVRL \
+  -xsl:$SCH_TO_XSL \
   -s:no_comments.sch \
   -o:no_comments.xsl
 ```

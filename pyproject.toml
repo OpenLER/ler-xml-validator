@@ -30,6 +30,7 @@ dev = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
+script-files = ["scripts/sax.sh"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -39,4 +40,3 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
-
