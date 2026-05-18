@@ -30,7 +30,9 @@ dev = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-script-files = ["scripts/sax.sh"]
+# script-files = ["scripts/sax.sh"]
+# copies sax.sh, instead of creating symlink,
+# ie requires reinstallation of python package to run latest
 
 [tool.setuptools.packages.find]
 where = ["src"]
