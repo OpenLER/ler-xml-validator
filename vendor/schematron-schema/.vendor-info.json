@@ -1,0 +1,24 @@
+{
+  "name": "schematron-schema",
+  "repo": "https://github.com/Schematron/schema",
+  "commit": "3a94cbe9ee6a9481d38888654cd7411bb450f895",
+  "updated_at": "2026-05-18T15:56:22.668847+00:00",
+  "files": [
+    {
+      "upstream_path": "schematron.rnc",
+      "local_path": "vendor/schematron-schema/schematron.rnc"
+    },
+    {
+      "upstream_path": "schematron.sch",
+      "local_path": "vendor/schematron-schema/schematron.sch"
+    },
+    {
+      "upstream_path": "svrl.rnc",
+      "local_path": "vendor/schematron-schema/svrl.rnc"
+    },
+    {
+      "upstream_path": "svrl.sch",
+      "local_path": "vendor/schematron-schema/svrl.sch"
+    }
+  ]
+}
