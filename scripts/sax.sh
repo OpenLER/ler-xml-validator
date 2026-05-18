@@ -8,7 +8,8 @@
 
 set -euo pipefail
 
-export SCH_TO_XSL=~/a/schxslt/core/target/xslt-only/2.0/compile-for-svrl.xsl
+#export SCH_TO_XSL=~/a/schxslt/core/target/xslt-only/2.0/compile-for-svrl.xsl
+export PIPELINE=~/a/schxslt/core/target/xslt-only/2.0/pipeline-for-svrl.xsl
 
 if [ $# -ne 2 ]; then
     echo "Usage: $0 file.xml file.sch"
@@ -19,7 +20,7 @@ XML="$1"
 SCH="$2"
 
 saxon \
-  -xsl:"$SCH_TO_XSL" \
+  -xsl:"$PIPELINE" \
   -s:"$SCH" \
   -o:main.xsl
 
@@ -27,3 +28,11 @@ saxon \
   -xsl:main.xsl \
   -s:"$XML" \
   -o:report.svrl
+
+xmlstarlet sel \
+  -N svrl="http://purl.oclc.org/dsdl/svrl" \
+  -t -m "//svrl:failed-assert" \
+  -o "[" -v "../@id" -o "] " \
+  -v "@location" -o "  " \
+  -v "normalize-space(svrl:text)" -n \
+  report.svrl
