@@ -13,8 +13,16 @@
   <ns prefix="gml" uri="http://www.opengis.net/gml/3.2"/>
   <ns prefix="xsi" uri="http://www.w3.org/2001/XMLSchema-instance"/>
 
+  <!-- expected: invalid, result: invalid -->
+  <include href="fail.sch"/>
+
+
+  <include href="nocomments.sch"/>
+
+
   <!-- Common abstract rules / shared helpers -->
   <include href="common.sch"/>
+
 
   <!-- General rules -->
   <include href="etableringstidspunkt.sch"/>
@@ -22,5 +30,6 @@
 
   <!-- Feature-specific rules, from feature catalog -->
   <include href="Elledning.sch"/>
+
 
 </schema>
