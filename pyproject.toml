@@ -16,13 +16,10 @@ dependencies = [
     "xmlschema",
     "pyyaml",
     "pyschematron @ git+https://github.com/velle/pyschematron.git@svrl-with-id",
-
 ]
 
 [project.scripts]
-lerxml-validate-xsd = "lerxml.cli:validate_xsd"
-lerxml-validate-sch = "lerxml.cli:validate_sch"
-lerxml-validate-con = "lerxml.cli:validate_con"
+lerxml = "lerxml.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -42,3 +39,4 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+

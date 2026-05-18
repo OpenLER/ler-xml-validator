@@ -1,57 +1,35 @@
+from typing import Literal, Optional
+from collections.abc import Iterator
+
+from dataclasses import dataclass
 from importlib.resources import files
 from lxml import etree
-from lxml.etree import _Element
+from lxml.etree import _ElementTree
 from pathlib import Path
-from lxml.isoschematron import Schematron  # ← VIGTIG
+from pyschematron import validate_document
 
 from . import ValidationError
 
+ns = {"svrl": "http://purl.oclc.org/dsdl/svrl"}
 sch_path = files("lerxml") / "schematron" / "2.2_ler.sch"
+sch_doc = etree.parse(sch_path)
 
 
-def validate_sch_element(elm: _Element) -> list[ValidationError]:
-    errors: list[ValidationError] = []
+def validate(doc: _ElementTree) -> Iterator[ValidationError]:
+    result = validate_document(doc, sch_doc)
+    svrl_doc = result.get_svrl()
 
-    with open(sch_path, "rb") as f:
-        sch_doc = etree.parse(f)
-
-    sch = Schematron(sch_doc, store_report=True)
-
-    xml_doc = etree.ElementTree(elm)
-
-    if sch.validate(xml_doc):
-        return errors
-
-    report = sch.validation_report
-    ns = {"svrl": "http://purl.oclc.org/dsdl/svrl"}
-
-    for failed in report.findall(".//svrl:failed-assert", ns):
-        message = failed.findtext("svrl:text", default="", namespaces=ns)
-        message = " ".join(message.split())
-
-        location = failed.get("location")
-        rule = failed.get("id")
-        assert rule is not None, "Alle sch:assert skal have id-attribut"
-
-        errors.append(
-            ValidationError(
-                source="schematron",
-                rule=rule,
-                message=message,
-                verbose_message=etree.tostring(failed, encoding="unicode"),
-                path=location,
-                line=None,  # Schematron giver typisk ikke linjenummer
-            )
+    for failed in svrl_doc.findall(".//svrl:failed-assert", ns):
+        yield ValidationError(
+            code=failed.get("id"),
+            message=failed.findtext("svrl:text", default="", namespaces=ns),
+            location=failed.get("location"),
         )
 
-    return errors
+def validate_file(path: str | Path) -> Iterator[ValidationError]:
+    doc = etree.parse(str(path))
+    yield from validate(doc)
 
-
-def validate_sch_file(path: str | Path):
-    root = etree.parse(path).getroot()
-    return validate_sch_element(root)
-
-
-def validate_sch_string(xml: str):
-    root = etree.fromstring(xml.encode())
-    return validate_sch_element(root)
+def validate_string(xml: str) -> Iterator[ValidationError]:
+    doc = etree.ElementTree(etree.fromstring(xml.encode()))
+    yield from validate(doc)

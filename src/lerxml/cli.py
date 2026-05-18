@@ -1,50 +1,63 @@
-import argparse
+from argparse import ArgumentParser
+from itertools import chain
+from pathlib import Path
+import sys
 
-from lerxml.xsd import validate_xsd_file
-from lerxml.schematron import validate_sch_file
-from lerxml.constraints import validate_con_file
+from lxml import etree
 
-from lerxml import ValidationError
+from . import schematron, xsd
+from . import ValidationError
 
 
-def validate_xsd():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file")
-    args = parser.parse_args()
+def parse_xml(path: Path) -> etree._ElementTree:
+    return etree.parse(str(path))
 
-    errors = validate_xsd_file(args.file)
-    if len(errors) == 0:
-        print("Validation successful: The XML file is valid according to the LER XSD schema.")
+
+def validate_all(path: Path):
+    doc = parse_xml(path)
+
+    yield from xsd.validate(doc)
+    yield from schematron.validate(doc)
+
+
+def print_error(error: ValidationError) -> None:
+    location = f" at {error.location}" if error.location else ""
+    line = f" line {error.line}" if error.line else ""
+
+    print(f"{error.code}: {error.message}{location}{line}")
+
+
+def run_validate(path: Path, mode: str) -> int:
+    doc = parse_xml(path)
+
+    if mode == "xsd":
+        errors = list(xsd.validate(doc))
+    elif mode == "schematron":
+        errors = list(schematron.validate(doc))
     else:
-        print("Validation failed: The XML file is not valid according to the LER XSD schema.")
-        for error in errors:
-            print(f"- {error.message} (line {error.line})")
+        errors = list(chain(
+            xsd.validate(doc),
+            schematron.validate(doc),
+        ))
+
+    for error in errors:
+        print_error(error)
+
+    return 1 if errors else 0
 
 
-def validate_sch():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file")
-    args = parser.parse_args()
+def main(argv: list[str] | None = None) -> int:
+    parser = ArgumentParser(prog="lerxml")
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-    errors = validate_sch_file(args.file)
-    if len(errors) == 0:
-        print("Validation successful: The XML file is valid according to the LER Schematron schema.")
-    else:
-        print("Validation failed: The XML file is not valid according to the LER Schematron schema.")
-        for error in errors:
-            print(f"- {error.message} (line {error.line})")
+    for command in ["validate", "xsd", "schematron"]:
+        subparser = subparsers.add_parser(command)
+        subparser.add_argument("xml_file", type=Path)
+
+    args = parser.parse_args(argv)
+
+    return run_validate(args.xml_file, args.command)
 
 
-def validate_con():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file")
-    args = parser.parse_args()
-
-    errors = validate_con_file(args.file)
-
-    if len(errors) == 0:
-        print("Validation successful: The XML file is valid according to the LER Constraints.")
-    else:
-        print("Validation failed: The XML file is not valid according to the LER Constraints.")
-        for error in errors:
-            print(f"- {error.message} (line {error.line})")
+if __name__ == "__main__":
+    raise SystemExit(main())
