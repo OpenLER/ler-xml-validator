@@ -8,9 +8,9 @@
   <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
   <ler:fareklasse>ikke farlig</ler:fareklasse>
 
-  <ler:geometri>
+  <ler:geometri >
     <gml:LineString srsName="EPSG:25832">
-      <gml:posList>
+      <gml:posList srsDimension="3">
         700000 6200000
         700010 6200010
       </gml:posList>
