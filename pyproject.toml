@@ -15,7 +15,7 @@ dependencies = [
     "lxml",
     "xmlschema",
     "pyyaml",
-    "pyschematron @ git+https://github.com/velle/pyschematron.git@svrl-with-id",
+    "pyschematron",
 ]
 
 [project.scripts]
