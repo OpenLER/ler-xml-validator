@@ -1,5 +1,6 @@
 <pattern
     xmlns="http://purl.oclc.org/dsdl/schematron"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
     id="common-date-rules">
 
   <!--
@@ -40,6 +41,10 @@
 
            else false()
          "/>
+
+    <assert id='__workaround__' test="true()">
+      RelaxNG schema does not accept rule without assert.
+    </assert>
 
   </rule>
 

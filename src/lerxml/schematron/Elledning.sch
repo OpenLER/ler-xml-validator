@@ -3,7 +3,6 @@
     id="elledning-rules">
 
   <rule context="ler:Elledning">
-    <extends rule="feature-base"/>
 
     <let name="zValues"
          value="
@@ -13,6 +12,8 @@
 
     <let name="verticalUnknown"
         value="exists($zValues) and (every $z in $zValues satisfies $z = '-99')"/>
+
+    <extends rule="feature-base"/>
 
     <assert id='spændingsniveauMåleenhedsrestriktion' test="not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'">
       Måleenheden for spændingsniveauet skal være kilovolt.
