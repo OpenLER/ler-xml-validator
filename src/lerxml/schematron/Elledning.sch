@@ -12,7 +12,7 @@
          "/>
 
     <let name="verticalUnknown"
-         value="exists($zValues) and every $z in $zValues satisfies $z = '-99'"/>
+        value="exists($zValues) and (every $z in $zValues satisfies $z = '-99')"/>
 
     <assert id='spændingsniveauMåleenhedsrestriktion' test="not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'">
       Måleenheden for spændingsniveauet skal være kilovolt.

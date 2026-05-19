@@ -1,5 +1,13 @@
 # #!/usr/bin/env bash
 
+# pyschematron is limited in:
+# - does not do schema validation of the schematron file
+# - for some issues with schematron files, it just ignores 
+#   the issue and continues, instead of erroring out.
+#
+# This script can help generate helpful error messages
+# for some of such issues.
+#
 # If it prints no errors, and if output is written to $OUTPUT,
 # then the 2.2_ler.sch was succesfully resolved and validated
 # according to relax ng schema.
@@ -21,3 +29,11 @@ xsltproc \
   "$INPUT"
 
 echo "Wrote $OUTPUT"
+
+export XML=$ROOT/testxml/elledning_01.xml
+
+schxslt \
+  -d "$XML" \
+  -s "$OUTPUT" \
+  -o out.svrl
+
