@@ -28,6 +28,7 @@ mkdir -p "$OUTDIR"
 [ -f "$XML" ] || { echo "XML not found: $XML" >&2; exit 2; }
 [ -f "$SCH" ] || { echo "SCH not found: $SCH" >&2; exit 2; }
 
+
 ## STEP 1:
 ## Resolve sch:include and write resolved schematron to $RESOLVED
 
@@ -51,18 +52,25 @@ schxslt \
   -o ".validation_of_sch.sch" #\
   > /dev/null
 
+
 ## STEP 4:
 ## Validate $XML against 2.2_ler.xsd
 
+echo "[Validating XML against XSD using jing]"
 jing "$LER_XSD" "$XML"
+ 
+# echo "[Validating XML against XSD using Python's xmlschema]"
+# xmlschema-validate -v --schema "$LER_XSD" "$XML"
 
 
 ## STEP 5:
 ## Run pyschematron cli
 
-
+echo "[Validating XML against sch using pyschematron]"
 pyschematron "$XML" "$RESOLVED" --svrl-out "$SVRL"
+
 
 ## STEP 6:
 ## Print summary of SVRL
+
 s2y "$SVRL"
