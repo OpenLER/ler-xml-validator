@@ -2,3 +2,8 @@ __pycache__
 *.pyc
 *.egg-info
 dumped_xml
+.basex-jar
+.basexgui
+.tmp.svrl
+.validation_of_sch.sch
+build
