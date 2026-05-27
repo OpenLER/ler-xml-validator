@@ -3,8 +3,8 @@
 run_mutation_tests.py — mutation test runner for lerxml.
 
 For each foo.xml / foo.yml pair under tests/data/ (skipping archive/),
-applies each XQuery mutation via BaseX and validates the result with
-the lerxml schematron validator.
+reads the pre-generated mutated XML files from tests/target/foo/<id>.xml
+and validates each with both the lerxml XSD and schematron validators.
 
 Modes:
   default   Fail if any expected code is missing from the found codes (subset check)
@@ -12,24 +12,23 @@ Modes:
   --report  Never fail; print a full table of mutations and their found codes
 
 Usage:
-  python run_mutation_tests.py --basex-jar .basex-jar/basex-11.7.jar
-  python run_mutation_tests.py --basex-jar .basex-jar/basex-11.7.jar --strict
-  python run_mutation_tests.py --basex-jar .basex-jar/basex-11.7.jar --report
+  python run_mutation_tests.py
+  python run_mutation_tests.py --strict
+  python run_mutation_tests.py --report
 """
 
 import argparse
-import subprocess
 import sys
-import textwrap
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
 
-from lerxml.schematron import validate_string
+from lerxml.schematron import validate_string as sch_validate_string
+from lerxml.xsd import validate_string as xsd_validate_string
 
-DATA_DIR = Path(__file__).parent / "tests" / "data"
-BASEX_CLASS = "org.basex.BaseX"
+DATA_DIR   = Path(__file__).parent / "tests" / "data"
+TARGET_DIR = Path(__file__).parent / "tests" / "target"
 
 
 # ---------------------------------------------------------------------------
@@ -39,57 +38,32 @@ BASEX_CLASS = "org.basex.BaseX"
 @dataclass
 class MutationResult:
     test_id: str
-    xml_path: Path
+    mutated_path: Path
     xquery: str
-    expected_codes: list[str]
-    found_codes: set[str]
+    expected_xsd_codes: list[str]
+    expected_sch_codes: list[str]
+    found_xsd_codes: set[str] = field(default_factory=set)
+    found_sch_codes: set[str] = field(default_factory=set)
     error: str | None = None
 
-    @property
-    def passed(self) -> bool:
-        if self.error:
-            return False
-        return True
-
     def check_subset(self) -> bool:
-        return set(self.expected_codes).issubset(self.found_codes)
+        return (
+            set(self.expected_xsd_codes).issubset(self.found_xsd_codes)
+            and set(self.expected_sch_codes).issubset(self.found_sch_codes)
+        )
 
     def check_exact(self) -> bool:
-        return set(self.expected_codes) == self.found_codes
-
-
-# ---------------------------------------------------------------------------
-# BaseX
-# ---------------------------------------------------------------------------
-
-def apply_xquery_mutation(xml_path: Path, xquery: str, basex_jar: Path) -> str:
-    wrapped = textwrap.dedent(f"""\
-        declare namespace ler = "http://data.gov.dk/schemas/LER/2/gml";
-        declare namespace gml = "http://www.opengis.net/gml/3.2";
-        declare namespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
-
-        let $doc := doc('{xml_path.as_posix()}')
         return (
-          copy $mutated := $doc
-          modify ({xquery.strip().replace('$doc', '$mutated')})
-          return $mutated
+            set(self.expected_xsd_codes) == self.found_xsd_codes
+            and set(self.expected_sch_codes) == self.found_sch_codes
         )
-    """)
-    result = subprocess.run(
-        ["java", "-cp", str(basex_jar), BASEX_CLASS, "-q", wrapped],
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip())
-    return result.stdout
 
 
 # ---------------------------------------------------------------------------
 # Discovery
 # ---------------------------------------------------------------------------
 
-def collect_mutations() -> list[tuple[str, Path, str, list[str]]]:
+def collect_mutations() -> list[tuple[str, Path, str, list[str], list[str]]]:
     mutations = []
     for yml_path in sorted(DATA_DIR.rglob("*.yml")):
         if "archive" in yml_path.parts:
@@ -98,10 +72,14 @@ def collect_mutations() -> list[tuple[str, Path, str, list[str]]]:
         if not xml_path.exists():
             continue
         entries = yaml.safe_load(yml_path.read_text()) or []
-        for i, entry in enumerate(entries):
-            codes = entry["codes"]
-            test_id = f"{xml_path.stem}-{'-'.join(codes) if codes else i}"
-            mutations.append((test_id, xml_path, entry["xquery"], codes))
+        for entry in entries:
+            entry_id     = str(entry["id"])
+            xquery       = entry.get("xquery", "()")
+            xsd_codes    = entry.get("xsd_codes", [])
+            sch_codes    = entry.get("sch_codes", [])
+            test_id      = f"{xml_path.stem}-{entry_id}"
+            mutated_path = TARGET_DIR / xml_path.stem / f"{entry_id}.xml"
+            mutations.append((test_id, mutated_path, xquery, xsd_codes, sch_codes))
     return mutations
 
 
@@ -109,30 +87,75 @@ def collect_mutations() -> list[tuple[str, Path, str, list[str]]]:
 # Runner
 # ---------------------------------------------------------------------------
 
-def run_mutations(basex_jar: Path) -> list[MutationResult]:
+def run_mutations() -> list[MutationResult]:
     results = []
-    for test_id, xml_path, xquery, expected_codes in collect_mutations():
-        try:
-            mutated_xml = apply_xquery_mutation(xml_path, xquery, basex_jar)
-            errors = list(validate_string(mutated_xml))
-            found_codes = {e.code for e in errors}
+    for test_id, mutated_path, xquery, xsd_codes, sch_codes in collect_mutations():
+        if not mutated_path.exists():
             results.append(MutationResult(
                 test_id=test_id,
-                xml_path=xml_path,
+                mutated_path=mutated_path,
                 xquery=xquery,
-                expected_codes=expected_codes,
-                found_codes=found_codes,
+                expected_xsd_codes=xsd_codes,
+                expected_sch_codes=sch_codes,
+                error=f"Mutated file not found: {mutated_path} (run generate-test-data first)",
             ))
-        except RuntimeError as e:
+            continue
+
+        try:
+            xml = mutated_path.read_text()
+            found_xsd = {e.code for e in xsd_validate_string(xml)}
+            found_sch = {e.code for e in sch_validate_string(xml)}
             results.append(MutationResult(
                 test_id=test_id,
-                xml_path=xml_path,
+                mutated_path=mutated_path,
                 xquery=xquery,
-                expected_codes=expected_codes,
-                found_codes=set(),
+                expected_xsd_codes=xsd_codes,
+                expected_sch_codes=sch_codes,
+                found_xsd_codes=found_xsd,
+                found_sch_codes=found_sch,
+            ))
+        except Exception as e:
+            results.append(MutationResult(
+                test_id=test_id,
+                mutated_path=mutated_path,
+                xquery=xquery,
+                expected_xsd_codes=xsd_codes,
+                expected_sch_codes=sch_codes,
                 error=str(e),
             ))
     return results
+
+
+# ---------------------------------------------------------------------------
+# ANSI colors
+# ---------------------------------------------------------------------------
+
+RED    = "\033[31m"
+GREEN  = "\033[32m"
+YELLOW = "\033[33m"
+RESET  = "\033[0m"
+
+
+def colorize(text: str, color: str) -> str:
+    return f"{color}{text}{RESET}"
+
+
+def fmt(codes: set[str] | list[str]) -> str:
+    return ", ".join(sorted(codes)) if codes else "(none)"
+
+
+def fmt_cell(expected: list[str], found: set[str], width: int) -> str:
+    """Return a padded, colored string for a found-codes cell."""
+    text = fmt(found)
+    padded = f"{text:<{width}}"
+    expected_set = set(expected)
+    if expected_set == found:
+        return colorize(padded, GREEN)
+    elif expected_set.issubset(found):
+        # Expected codes present but extra codes also fired
+        return colorize(padded, YELLOW)
+    else:
+        return colorize(padded, RED)
 
 
 # ---------------------------------------------------------------------------
@@ -141,18 +164,22 @@ def run_mutations(basex_jar: Path) -> list[MutationResult]:
 
 def print_report(results: list[MutationResult]) -> None:
     col_id = max(len(r.test_id) for r in results)
-    col_exp = max(len(str(r.expected_codes)) for r in results)
-
-    header = f"{'TEST':<{col_id}}  {'EXPECTED':<{col_exp}}  FOUND"
+    w = 20
+    header = f"{'TEST':<{col_id}}  {'XSD expected':<{w}}  {'XSD found':<{w}}  {'SCH expected':<{w}}  SCH found"
     print(header)
     print("-" * len(header))
 
     for r in results:
         if r.error:
-            found_str = f"ERROR: {r.error}"
-        else:
-            found_str = str(sorted(r.found_codes)) if r.found_codes else "(no errors)"
-        print(f"{r.test_id:<{col_id}}  {str(r.expected_codes):<{col_exp}}  {found_str}")
+            print(f"{r.test_id:<{col_id}}  {colorize('ERROR: ' + r.error, RED)}")
+            continue
+        print(
+            f"{r.test_id:<{col_id}}"
+            f"  {fmt(r.expected_xsd_codes):<{w}}"
+            f"  {fmt_cell(r.expected_xsd_codes, r.found_xsd_codes, w)}"
+            f"  {fmt(r.expected_sch_codes):<{w}}"
+            f"  {fmt_cell(r.expected_sch_codes, r.found_sch_codes, w)}"
+        )
 
 
 def print_summary(results: list[MutationResult], strict: bool) -> tuple[int, int]:
@@ -165,22 +192,30 @@ def print_summary(results: list[MutationResult], strict: bool) -> tuple[int, int
 
         ok = r.check_exact() if strict else r.check_subset()
         if not ok:
+            lines = [f"  FAIL   {r.test_id}:"]
             if strict:
-                missing = set(r.expected_codes) - r.found_codes
-                extra = r.found_codes - set(r.expected_codes)
-                detail = []
-                if missing:
-                    detail.append(f"missing={sorted(missing)}")
-                if extra:
-                    detail.append(f"unexpected={sorted(extra)}")
-                print(f"  FAIL   {r.test_id}: {', '.join(detail)}")
+                xsd_missing = set(r.expected_xsd_codes) - r.found_xsd_codes
+                xsd_extra   = r.found_xsd_codes - set(r.expected_xsd_codes)
+                sch_missing = set(r.expected_sch_codes) - r.found_sch_codes
+                sch_extra   = r.found_sch_codes - set(r.expected_sch_codes)
+                if xsd_missing: lines.append(f"           xsd missing={sorted(xsd_missing)}")
+                if xsd_extra:   lines.append(f"           xsd unexpected={sorted(xsd_extra)}")
+                if sch_missing: lines.append(f"           sch missing={sorted(sch_missing)}")
+                if sch_extra:   lines.append(f"           sch unexpected={sorted(sch_extra)}")
             else:
-                missing = set(r.expected_codes) - r.found_codes
-                print(f"  FAIL   {r.test_id}: missing={sorted(missing)}, got={sorted(r.found_codes)}")
+                xsd_missing = set(r.expected_xsd_codes) - r.found_xsd_codes
+                sch_missing = set(r.expected_sch_codes) - r.found_sch_codes
+                if xsd_missing: lines.append(f"           xsd missing={sorted(xsd_missing)}, got={sorted(r.found_xsd_codes)}")
+                if sch_missing: lines.append(f"           sch missing={sorted(sch_missing)}, got={sorted(r.found_sch_codes)}")
+            print("\n".join(lines))
             failures += 1
         else:
-            extra = r.found_codes - set(r.expected_codes)
-            extra_str = f"  (also triggered: {sorted(extra)})" if extra and not strict else ""
+            extras = []
+            xsd_extra = r.found_xsd_codes - set(r.expected_xsd_codes)
+            sch_extra = r.found_sch_codes - set(r.expected_sch_codes)
+            if xsd_extra: extras.append(f"xsd also triggered: {sorted(xsd_extra)}")
+            if sch_extra: extras.append(f"sch also triggered: {sorted(sch_extra)}")
+            extra_str = f"  ({', '.join(extras)})" if extras and not strict else ""
             print(f"  PASS   {r.test_id}{extra_str}")
 
     return len(results), failures
@@ -195,12 +230,6 @@ def main() -> None:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument(
-        "--basex-jar",
-        required=True,
-        type=Path,
-        help="Path to the BaseX JAR file",
-    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
         "--strict",
@@ -214,11 +243,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if not args.basex_jar.exists():
-        print(f"Error: BaseX JAR not found: {args.basex_jar}", file=sys.stderr)
-        sys.exit(1)
-
-    results = run_mutations(args.basex_jar)
+    results = run_mutations()
 
     if args.report:
         print_report(results)

@@ -7,3 +7,4 @@ dumped_xml
 .tmp.svrl
 .validation_of_sch.sch
 build
+/tests/target

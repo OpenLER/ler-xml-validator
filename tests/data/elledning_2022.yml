@@ -1,8 +1,16 @@
-- xquery: ()
-  codes: []
-- xquery: delete node $doc//ler:driftsstatus
-  codes: [EL1]
-- xquery: replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>
-  codes: [EL2, EL3]
-- xquery: replace value of node $doc//ler:driftsstatus with "ude af drift"
-  codes: []
+- id: 01
+  xquery: ()
+  xsd_codes: []
+  sch_codes: []
+- id: 02
+  xquery: delete node $doc//ler:driftsstatus
+  xsd_codes: []
+  sch_codes: [EL1]
+- id: 03
+  xquery: replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>
+  xsd_codes: []
+  sch_codes: [EL2, EL3]
+- id: 04
+  xquery: replace value of node $doc//ler:driftsstatus with "ude af drift"
+  xsd_codes: []
+  sch_codes: []
