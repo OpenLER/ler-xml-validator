@@ -14,3 +14,7 @@
   xquery: replace value of node $doc//ler:driftsstatus with "ude af drift"
   xsd_codes: []
   sch_codes: []
+- id: 05
+  xquery: insert node comment { "foo" } as first into $doc/*[1]
+  xsd_codes: []
+  sch_codes: []

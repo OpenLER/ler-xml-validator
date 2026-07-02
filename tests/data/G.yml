@@ -1,0 +1,16 @@
+- id: 01
+  xquery: ()
+  xsd_codes: []
+  sch_codes: []
+- id: 02
+  xquery: delete node $doc//@srsDimension
+  xsd_codes: []
+  sch_codes: [XYZ1]
+- id: 03
+  xquery: replace value of node $doc//@srsDimension with "2"
+  xsd_codes: []
+  sch_codes: [XYZ2]
+- id: 04
+  xquery: replace value of node $doc//@srsDimension with "4"
+  xsd_codes: []
+  sch_codes: [XYZ2]
