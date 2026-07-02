@@ -9,7 +9,7 @@ def mutations(session: nox.Session) -> None:
     session.run("python", "run_mutation_tests.py", *session.posargs)
 
 
-@nox.session(python="3.12")
+@nox.session(python="3.12", default=False)
 def report(session: nox.Session) -> None:
     """Print full mutation report without failing."""
     generate_test_data(session)
@@ -17,7 +17,7 @@ def report(session: nox.Session) -> None:
     session.run("python", "run_mutation_tests.py", "--report")
 
 
-@nox.session(name="generate-test-data")
+@nox.session(name="generate-test-data", default=False)
 def generate_test_data(session: nox.Session) -> None:
     """Generate derived XML test files from YAML mutation specs."""
     session.run("mvn", "-f", "tests/generate-test-data/pom.xml", "compile", "exec:java", external=True)
