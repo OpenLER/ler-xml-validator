@@ -3,8 +3,9 @@
 run_mutation_tests.py — mutation test runner for lerxml.
 
 For each foo.xml / foo.yml pair under tests/data/ (skipping archive/),
-reads the pre-generated mutated XML files from tests/target/foo/<id>.xml
-and validates each with both the lerxml XSD and schematron validators.
+generates each mutation on the fly by running its XQuery Update Facility
+expression through the `basex` CLI, and validates the result with both the
+lerxml XSD and schematron validators.
 
 Modes:
   default   Fail if any expected code is missing from the found codes (subset check)
@@ -15,20 +16,24 @@ Usage:
   python run_mutation_tests.py
   python run_mutation_tests.py --strict
   python run_mutation_tests.py --report
+
+Requires the `basex` CLI to be installed and on PATH.
 """
 
 import argparse
+import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
+from lxml import etree
 
 from lerxml.schematron import validate_string as sch_validate_string
 from lerxml.xsd import validate_string as xsd_validate_string
 
-DATA_DIR   = Path(__file__).parent / "tests" / "data"
-TARGET_DIR = Path(__file__).parent / "tests" / "target"
+DATA_DIR = Path(__file__).parent / "tests" / "data"
 
 
 # ---------------------------------------------------------------------------
@@ -38,7 +43,7 @@ TARGET_DIR = Path(__file__).parent / "tests" / "target"
 @dataclass
 class MutationResult:
     test_id: str
-    mutated_path: Path
+    xml_path: Path
     xquery: str
     expected_xsd_codes: list[str]
     expected_sch_codes: list[str]
@@ -78,9 +83,55 @@ def collect_mutations() -> list[tuple[str, Path, str, list[str], list[str]]]:
             xsd_codes    = entry.get("xsd_codes", [])
             sch_codes    = entry.get("sch_codes", [])
             test_id      = f"{xml_path.stem}-{entry_id}"
-            mutated_path = TARGET_DIR / xml_path.stem / f"{entry_id}.xml"
-            mutations.append((test_id, mutated_path, xquery, xsd_codes, sch_codes))
+            mutations.append((test_id, xml_path, xquery, xsd_codes, sch_codes))
     return mutations
+
+
+# ---------------------------------------------------------------------------
+# Mutation generation (XQuery Update Facility via basex)
+# ---------------------------------------------------------------------------
+
+def generate_mutation(xml_path: Path, xquery: str) -> str:
+    """Run an XQuery Update Facility expression against xml_path via the
+    basex CLI and return the resulting XML as a string."""
+    root = etree.parse(str(xml_path)).getroot()
+    ns_decls = "".join(
+        f"declare namespace {prefix}='{uri}';\n"
+        for prefix, uri in root.nsmap.items()
+        if prefix is not None
+    )
+    abs_xml = str(xml_path.resolve()).replace("'", "\\'")
+
+    if xquery in (None, "", "()"):
+        query = ns_decls + f"doc('{abs_xml}')"
+    else:
+        mutation = xquery.replace("$doc", "$d")
+        query = (
+            ns_decls
+            + f"let $doc := doc('{abs_xml}')\n"
+            + f"let $result := copy $d := $doc modify ({mutation}) return $d\n"
+            + "return $result"
+        )
+
+    # Written to a temp file rather than passed via -q: XQuery uses '$' for
+    # variables, which a shell would otherwise try to expand.
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".xq", delete=False) as f:
+        f.write(query)
+        query_path = Path(f.name)
+
+    try:
+        result = subprocess.run(
+            ["basex", str(query_path)],
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        query_path.unlink(missing_ok=True)
+
+    if result.returncode != 0:
+        raise RuntimeError(f"basex failed: {result.stderr.strip()}")
+
+    return result.stdout
 
 
 # ---------------------------------------------------------------------------
@@ -89,25 +140,14 @@ def collect_mutations() -> list[tuple[str, Path, str, list[str], list[str]]]:
 
 def run_mutations() -> list[MutationResult]:
     results = []
-    for test_id, mutated_path, xquery, xsd_codes, sch_codes in collect_mutations():
-        if not mutated_path.exists():
-            results.append(MutationResult(
-                test_id=test_id,
-                mutated_path=mutated_path,
-                xquery=xquery,
-                expected_xsd_codes=xsd_codes,
-                expected_sch_codes=sch_codes,
-                error=f"Mutated file not found: {mutated_path} (run generate-test-data first)",
-            ))
-            continue
-
+    for test_id, xml_path, xquery, xsd_codes, sch_codes in collect_mutations():
         try:
-            xml = mutated_path.read_text()
+            xml = generate_mutation(xml_path, xquery)
             found_xsd = {e.code for e in xsd_validate_string(xml)}
             found_sch = {e.code for e in sch_validate_string(xml)}
             results.append(MutationResult(
                 test_id=test_id,
-                mutated_path=mutated_path,
+                xml_path=xml_path,
                 xquery=xquery,
                 expected_xsd_codes=xsd_codes,
                 expected_sch_codes=sch_codes,
@@ -117,7 +157,7 @@ def run_mutations() -> list[MutationResult]:
         except Exception as e:
             results.append(MutationResult(
                 test_id=test_id,
-                mutated_path=mutated_path,
+                xml_path=xml_path,
                 xquery=xquery,
                 expected_xsd_codes=xsd_codes,
                 expected_sch_codes=sch_codes,
