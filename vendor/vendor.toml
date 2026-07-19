@@ -17,3 +17,11 @@ files = [
   "trunk/schematron/code/iso_svrl_for_xslt1.xsl",
   "trunk/schematron/code/iso_dsdl_include.xsl",
 ]
+
+[[source]]
+name = "basexclient"
+repo = "https://github.com/BaseXdb/basex"
+commit = "5ec69af14847ce7fb4ca9697e05670cc0cddf8d2"
+files = [
+  "basex-api/src/main/python/BaseXClient/BaseXClient.py",
+]

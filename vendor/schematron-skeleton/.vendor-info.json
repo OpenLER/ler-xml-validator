@@ -2,7 +2,7 @@
   "name": "schematron-skeleton",
   "repo": "https://github.com/Schematron/schematron",
   "commit": "77dcd36c53d12ed786c144ece3b2af7694abdc56",
-  "updated_at": "2026-05-18T16:15:35.924796+00:00",
+  "updated_at": "2026-07-18T21:08:19.133966+00:00",
   "files": [
     {
       "upstream_path": "trunk/schematron/code/iso_svrl_for_xslt1.xsl",

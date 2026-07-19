@@ -26,7 +26,25 @@ fordi jeg valgte at bruge XQuery Update Facility via xBase.
 | `scripts/export_xsd.py` | Python | Henter LER XSD-filerne fra ler.dk og gemmer dem lokalt i `src/lerxml/xsd/` | Manuelt, kun når XSD'erne skal opdateres | Bruger `xmlschema`-biblioteket. |
 | `scripts/update_vendor.py` | Python | Henter/opdaterer vendored tredjepartskode i `vendor/` iht. `vendor/vendor.toml` (schematron-schema, schematron-skeleton) | Manuelt | Kræver netværksadgang til GitHub. |
 | `scripts/pys.sh` | Bash | Fuld manuel valideringspipeline: resolver `sch:include`, validerer mod RNC/schematron.sch (jing/schxslt), validerer XML mod XSD (jing), validerer mod sch (pyschematron CLI), printer SVRL-opsummering | Manuelt, dev-only | Hardkodede personlige stier (`/home/thlw/a/schema/...`). Kræver `xsltproc`, `jing`, `schxslt`, `pyschematron` CLI og `s2y` installeret lokalt. |
-| `run_mutation_tests.py` (repo-rod) | Python | Kører mutation-tests: for hver mutation i `tests/data/*.yml` genererer den XML'en on-the-fly ved at køre XQuery Update Facility-udtrykket via `basex`-CLI'en, og validerer resultatet mod forventede XSD-/Schematron-fejlkoder | Automatisk via `nox -s mutations`/`nox -s report`, eller manuelt `python run_mutation_tests.py [--strict\|--report]` | Kræver `basex` installeret og på PATH. Ligger bevidst i repo-roden, ikke i `scripts/`, da det er projektets primære test-entrypoint. Ingen separat genererings-fase eller mellemliggende filer — alt sker i ét trin. |
+| `run_mutation_tests.py` (repo-rod) | Python | Kører mutation-tests: for hver mutation i `tests/data/*.yml` genererer den XML'en on-the-fly ved at sende XQuery Update Facility-udtrykket til en kørende `basex`-server, og validerer resultatet mod forventede XSD-/Schematron-fejlkoder | Automatisk via `nox -s mutations`/`nox -s report`, eller manuelt `python run_mutation_tests.py [--strict\|--report]` | Kræver en kørende `basexserver -p1984` (startes manuelt, kør én gang og lad den køre mens du arbejder — se nedenfor) samt en lokal `lerxml`-bruger med `CREATE`-rettighed (engangs-opsætning). Bruger `vendor/basexclient/BaseXClient.py` (BaseX's officielle Python-klient) til selve forbindelsen. Ligger bevidst i repo-roden, ikke i `scripts/`, da det er projektets primære test-entrypoint. |
+
+### Opsætning af basex-server (engangs + daglig)
+
+Engangs-opsætning af en lav-privilegie-bruger (kræver ikke en kørende server):
+```
+basex -c "CREATE USER lerxml lerxml"
+basex -c "GRANT CREATE TO lerxml"
+```
+`CREATE` er den laveste rettighed der tillader `doc()` og XQuery Update-udtryk mod vilkårlige filer — `ADMIN` er ikke nødvendigt.
+
+Hver gang du sætter dig til at arbejde, start serveren og lad den køre:
+```
+basexserver -p1984
+```
+Og når du er færdig:
+```
+basexserver stop
+```
 
 ## Nox sessions
 

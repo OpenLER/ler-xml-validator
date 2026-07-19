@@ -1,0 +1,12 @@
+{
+  "name": "basexclient",
+  "repo": "https://github.com/BaseXdb/basex",
+  "commit": "5ec69af14847ce7fb4ca9697e05670cc0cddf8d2",
+  "updated_at": "2026-07-18T21:08:22.018435+00:00",
+  "files": [
+    {
+      "upstream_path": "basex-api/src/main/python/BaseXClient/BaseXClient.py",
+      "local_path": "vendor/basexclient/BaseXClient.py"
+    }
+  ]
+}

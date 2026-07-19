@@ -4,8 +4,8 @@ run_mutation_tests.py — mutation test runner for lerxml.
 
 For each foo.xml / foo.yml pair under tests/data/ (skipping archive/),
 generates each mutation on the fly by running its XQuery Update Facility
-expression through the `basex` CLI, and validates the result with both the
-lerxml XSD and schematron validators.
+expression against a running basex server, and validates the result with
+both the lerxml XSD and schematron validators.
 
 Modes:
   default   Fail if any expected code is missing from the found codes (subset check)
@@ -17,23 +17,37 @@ Usage:
   python run_mutation_tests.py --strict
   python run_mutation_tests.py --report
 
-Requires the `basex` CLI to be installed and on PATH.
+Requires a basex server to be running first, e.g.:
+  basexserver -p1984
+
+Requires a low-privilege basex user (one-time setup, run locally without a
+running server):
+  basex -c "CREATE USER lerxml lerxml"
+  basex -c "GRANT CREATE TO lerxml"
+CREATE is the lowest permission that allows running doc() and XQuery Update
+expressions against arbitrary files; ADMIN is not needed.
 """
 
 import argparse
-import subprocess
 import sys
-import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
 from lxml import etree
 
+sys.path.insert(0, str(Path(__file__).parent / "vendor" / "basexclient"))
+from BaseXClient import Session
+
 from lerxml.schematron import validate_string as sch_validate_string
 from lerxml.xsd import validate_string as xsd_validate_string
 
 DATA_DIR = Path(__file__).parent / "tests" / "data"
+
+BASEX_HOST = "localhost"
+BASEX_PORT = 1984
+BASEX_USER = "lerxml"
+BASEX_PASSWORD = "lerxml"
 
 
 # ---------------------------------------------------------------------------
@@ -91,9 +105,9 @@ def collect_mutations() -> list[tuple[str, Path, str, list[str], list[str]]]:
 # Mutation generation (XQuery Update Facility via basex)
 # ---------------------------------------------------------------------------
 
-def generate_mutation(xml_path: Path, xquery: str) -> str:
-    """Run an XQuery Update Facility expression against xml_path via the
-    basex CLI and return the resulting XML as a string."""
+def generate_mutation(session: Session, xml_path: Path, xquery: str) -> str:
+    """Run an XQuery Update Facility expression against xml_path via a
+    running basex server and return the resulting XML as a string."""
     root = etree.parse(str(xml_path)).getroot()
     ns_decls = "".join(
         f"declare namespace {prefix}='{uri}';\n"
@@ -113,57 +127,56 @@ def generate_mutation(xml_path: Path, xquery: str) -> str:
             + "return $result"
         )
 
-    # Written to a temp file rather than passed via -q: XQuery uses '$' for
-    # variables, which a shell would otherwise try to expand.
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".xq", delete=False) as f:
-        f.write(query)
-        query_path = Path(f.name)
-
-    try:
-        result = subprocess.run(
-            ["basex", str(query_path)],
-            capture_output=True,
-            text=True,
-        )
-    finally:
-        query_path.unlink(missing_ok=True)
-
-    if result.returncode != 0:
-        raise RuntimeError(f"basex failed: {result.stderr.strip()}")
-
-    return result.stdout
+    return session.query(query).execute()
 
 
 # ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
 
+def connect() -> Session:
+    try:
+        return Session(BASEX_HOST, BASEX_PORT, BASEX_USER, BASEX_PASSWORD)
+    except OSError as e:
+        print(
+            f"ERROR: Could not connect to a basex server at "
+            f"{BASEX_HOST}:{BASEX_PORT} ({e}).\n"
+            f"Start one first, e.g.: basexserver -p{BASEX_PORT}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 def run_mutations() -> list[MutationResult]:
-    results = []
-    for test_id, xml_path, xquery, xsd_codes, sch_codes in collect_mutations():
-        try:
-            xml = generate_mutation(xml_path, xquery)
-            found_xsd = {e.code for e in xsd_validate_string(xml)}
-            found_sch = {e.code for e in sch_validate_string(xml)}
-            results.append(MutationResult(
-                test_id=test_id,
-                xml_path=xml_path,
-                xquery=xquery,
-                expected_xsd_codes=xsd_codes,
-                expected_sch_codes=sch_codes,
-                found_xsd_codes=found_xsd,
-                found_sch_codes=found_sch,
-            ))
-        except Exception as e:
-            results.append(MutationResult(
-                test_id=test_id,
-                xml_path=xml_path,
-                xquery=xquery,
-                expected_xsd_codes=xsd_codes,
-                expected_sch_codes=sch_codes,
-                error=str(e),
-            ))
-    return results
+    session = connect()
+    try:
+        results = []
+        for test_id, xml_path, xquery, xsd_codes, sch_codes in collect_mutations():
+            try:
+                xml = generate_mutation(session, xml_path, xquery)
+                found_xsd = {e.code for e in xsd_validate_string(xml)}
+                found_sch = {e.code for e in sch_validate_string(xml)}
+                results.append(MutationResult(
+                    test_id=test_id,
+                    xml_path=xml_path,
+                    xquery=xquery,
+                    expected_xsd_codes=xsd_codes,
+                    expected_sch_codes=sch_codes,
+                    found_xsd_codes=found_xsd,
+                    found_sch_codes=found_sch,
+                ))
+            except Exception as e:
+                results.append(MutationResult(
+                    test_id=test_id,
+                    xml_path=xml_path,
+                    xquery=xquery,
+                    expected_xsd_codes=xsd_codes,
+                    expected_sch_codes=sch_codes,
+                    error=str(e),
+                ))
+        return results
+    finally:
+        session.close()
 
 
 # ---------------------------------------------------------------------------
