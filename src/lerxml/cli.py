@@ -5,7 +5,7 @@ import sys
 
 from lxml import etree
 
-from . import schematron, xsd
+from . import schematron, xsd, xta
 from . import ValidationError
 
 
@@ -17,7 +17,7 @@ def validate_all(path: Path):
     doc = parse_xml(path)
 
     yield from xsd.validate(doc)
-    yield from schematron.validate(doc)
+    yield from xta.validate(doc)
 
 
 def print_error(error: ValidationError) -> None:
@@ -34,10 +34,12 @@ def run_validate(path: Path, mode: str) -> int:
         errors = list(xsd.validate(doc))
     elif mode == "schematron":
         errors = list(schematron.validate(doc))
+    elif mode == "xta":
+        errors = list(xta.validate(doc))
     else:
         errors = list(chain(
             xsd.validate(doc),
-            schematron.validate(doc),
+            xta.validate(doc),
         ))
 
     for error in errors:
@@ -50,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = ArgumentParser(prog="lerxml")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    for command in ["validate", "xsd", "schematron"]:
+    for command in ["validate", "xsd", "schematron", "xta"]:
         subparser = subparsers.add_parser(command)
         subparser.add_argument("xml_file", type=Path)
 
