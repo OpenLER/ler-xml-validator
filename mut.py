@@ -42,7 +42,7 @@ from BaseXClient import Session
 from lerxml.schematron import validate_string as sch_validate_string
 from lerxml.xsd import validate_string as xsd_validate_string
 
-DATA_DIR = Path(__file__).parent / "tests" / "data"
+DATA_DIR = Path(__file__).parent / "mut"
 
 BASEX_HOST = "localhost"
 BASEX_PORT = 1984
