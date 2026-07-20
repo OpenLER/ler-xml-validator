@@ -8,6 +8,9 @@
   <ler:etableringstidspunkt>2022-01-01</ler:etableringstidspunkt>
   <ler:fareklasse>ikke farlig</ler:fareklasse>
 
+  <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
+  <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal>
+
   <ler:geometri >
     <gml:LineString srsName="EPSG:25832">
       <gml:posList srsDimension="3">

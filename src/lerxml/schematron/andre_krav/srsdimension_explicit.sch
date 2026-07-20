@@ -4,7 +4,7 @@
 
   <!-- Alle eksplicit angivne srsDimension-attributter skal være 3 -->
   <rule context="gml:*[@srsDimension]">
-    <assert id="XYZ3"
+    <assert id="XYZ2"
             test="@srsDimension = '3'">
       GML-elementet <name/> har srsDimension="<value-of select="@srsDimension"/>",
       men værdien skal være "3".
