@@ -5,11 +5,11 @@ import nox
 def mutations(session: nox.Session) -> None:
     """Run mutation tests (subset mode by default)."""
     session.install("-e", ".[dev]")
-    session.run("python", "run_mutation_tests.py", *session.posargs)
+    session.run("python", "mut.py", *session.posargs)
 
 
 @nox.session(python="3.12", default=False)
 def report(session: nox.Session) -> None:
     """Print full mutation report without failing."""
     session.install("-e", ".[dev]")
-    session.run("python", "run_mutation_tests.py", "--report")
+    session.run("python", "mut.py", "--report")

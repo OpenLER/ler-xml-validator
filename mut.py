@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-run_mutation_tests.py — mutation test runner for lerxml.
+mut.py — mutation test runner for lerxml.
 
 For each foo.xml / foo.yml pair under tests/data/ (skipping archive/),
 generates each mutation on the fly by running its XQuery Update Facility
@@ -13,9 +13,9 @@ Modes:
   --report  Never fail; print a full table of mutations and their found codes
 
 Usage:
-  python run_mutation_tests.py
-  python run_mutation_tests.py --strict
-  python run_mutation_tests.py --report
+  python mut.py
+  python mut.py --strict
+  python mut.py --report
 
 Requires a basex server to be running first, e.g.:
   basexserver -p1984

@@ -26,7 +26,7 @@ fordi jeg valgte at bruge XQuery Update Facility via xBase.
 | `scripts/export_xsd.py` | Python | Henter LER XSD-filerne fra ler.dk og gemmer dem lokalt i `src/lerxml/xsd/` | Manuelt, kun når XSD'erne skal opdateres | Bruger `xmlschema`-biblioteket. |
 | `scripts/update_vendor.py` | Python | Henter/opdaterer vendored tredjepartskode i `vendor/` iht. `vendor/vendor.toml` (schematron-schema, schematron-skeleton) | Manuelt | Kræver netværksadgang til GitHub. |
 | `scripts/pys.sh` | Bash | Fuld manuel valideringspipeline: resolver `sch:include`, validerer mod RNC/schematron.sch (jing/schxslt), validerer XML mod XSD (jing), validerer mod sch (pyschematron CLI), printer SVRL-opsummering | Manuelt, dev-only | Hardkodede personlige stier (`/home/thlw/a/schema/...`). Kræver `xsltproc`, `jing`, `schxslt`, `pyschematron` CLI og `s2y` installeret lokalt. |
-| `run_mutation_tests.py` (repo-rod) | Python | Kører mutation-tests: for hver mutation i `tests/data/*.yml` genererer den XML'en on-the-fly ved at sende XQuery Update Facility-udtrykket til en kørende `basex`-server, og validerer resultatet mod forventede XSD-/Schematron-fejlkoder | Automatisk via `nox -s mutations`/`nox -s report`, eller manuelt `python run_mutation_tests.py [--strict\|--report]` | Kræver en kørende `basexserver -p1984` (startes manuelt, kør én gang og lad den køre mens du arbejder — se nedenfor) samt en lokal `lerxml`-bruger med `CREATE`-rettighed (engangs-opsætning). Bruger `vendor/basexclient/BaseXClient.py` (BaseX's officielle Python-klient) til selve forbindelsen. Ligger bevidst i repo-roden, ikke i `scripts/`, da det er projektets primære test-entrypoint. |
+| `mut.py` (repo-rod) | Python | Kører mutation-tests: for hver mutation i `tests/data/*.yml` genererer den XML'en on-the-fly ved at sende XQuery Update Facility-udtrykket til en kørende `basex`-server, og validerer resultatet mod forventede XSD-/Schematron-fejlkoder | Automatisk via `nox -s mutations`/`nox -s report`, eller manuelt `python mut.py [--strict\|--report]` | Kræver en kørende `basexserver -p1984` (startes manuelt, kør én gang og lad den køre mens du arbejder — se nedenfor) samt en lokal `lerxml`-bruger med `CREATE`-rettighed (engangs-opsætning). Bruger `vendor/basexclient/BaseXClient.py` (BaseX's officielle Python-klient) til selve forbindelsen. Ligger bevidst i repo-roden, ikke i `scripts/`, da det er projektets primære test-entrypoint. |
 
 ### Opsætning af basex-server (engangs + daglig)
 
@@ -52,6 +52,6 @@ De fleste opgaver er almindelige scripts (se tabellen ovenfor). Nox bruges kun t
 
 | Session | Formål |
 |---|---|
-| `nox -s mutations` | Kører `run_mutation_tests.py` i subset-mode (default) — fejler hvis forventede fejlkoder mangler. |
+| `nox -s mutations` | Kører `mut.py` i subset-mode (default) — fejler hvis forventede fejlkoder mangler. |
 | `nox -s report` | Samme som `mutations`, men kører i `--report`-mode: printer en fuld tabel og fejler aldrig. |
 
