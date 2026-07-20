@@ -11,20 +11,25 @@ from pyschematron import validate_document
 from . import ValidationError
 
 ns = {"svrl": "http://purl.oclc.org/dsdl/svrl"}
-sch_path = files("lerxml") / "schematron" / "2.2_ler.sch"
-sch_doc = etree.parse(sch_path)
+
+schematron_dir = files("lerxml") / "schematron"
+sch_docs = [
+    etree.parse(schematron_dir / "restriktioner" / "restriktioner.sch"),
+    etree.parse(schematron_dir / "andre_krav" / "andre_krav.sch"),
+]
 
 
 def validate(doc: _ElementTree) -> Iterator[ValidationError]:
-    result = validate_document(doc, sch_doc)
-    svrl_doc = result.get_svrl()
+    for sch_doc in sch_docs:
+        result = validate_document(doc, sch_doc)
+        svrl_doc = result.get_svrl()
 
-    for failed in svrl_doc.findall(".//svrl:failed-assert", ns):
-        yield ValidationError(
-            code=failed.get("id"),
-            message=failed.findtext("svrl:text", default="", namespaces=ns),
-            location=failed.get("location"),
-        )
+        for failed in svrl_doc.findall(".//svrl:failed-assert", ns):
+            yield ValidationError(
+                code=failed.get("id"),
+                message=failed.findtext("svrl:text", default="", namespaces=ns),
+                location=failed.get("location"),
+            )
 
 def validate_file(path: str | Path) -> Iterator[ValidationError]:
     doc = etree.parse(str(path))
