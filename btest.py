@@ -216,6 +216,7 @@ class FileResult:
 
 
 def run_tests(filter_str: str | None = None) -> list[FileResult]:
+    from lerxml.geometri import validate_string as geometri_validate_string
     from lerxml.xsd import validate_string as xsd_validate_string
     from lerxml.xta import validate_string as xta_validate_string
 
@@ -230,6 +231,7 @@ def run_tests(filter_str: str | None = None) -> list[FileResult]:
                     found = (
                         {e.code for e in xsd_validate_string(xml)}
                         | {e.code for e in xta_validate_string(xml)}
+                        | {e.code for e in geometri_validate_string(xml)}
                     )
                     node_results.append(NodeResult(case=case, found_codes=found))
                 except Exception as e:

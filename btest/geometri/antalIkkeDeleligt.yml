@@ -1,0 +1,8 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: posList ikke deleligt med srsDimension
+    xquery: |-
+      replace value of node $doc//gml:posList with
+        "700000 6200000 -99 700010 6200010"
+    assertions: [GEOM2]

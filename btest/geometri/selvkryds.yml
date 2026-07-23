@@ -1,0 +1,8 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: selvkrydsende posList
+    xquery: |-
+      replace value of node $doc//gml:posList with
+        "700000 6200000 -99 700010 6200010 -99 700000 6200010 -99 700010 6200000 -99"
+    assertions: [GEOM1]

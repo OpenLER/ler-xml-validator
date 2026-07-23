@@ -16,6 +16,7 @@ dependencies = [
     "xmlschema",
     "pyyaml",
     "pyschematron",
+    "shapely",
 ]
 
 [project.scripts]
