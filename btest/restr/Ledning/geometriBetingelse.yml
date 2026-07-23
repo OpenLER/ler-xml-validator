@@ -4,5 +4,8 @@ branches:
     xquery: ()
     assertions: []
   - name: fjern geometri for ledning-B
-    xquery: delete node $doc//ler:Elledning[@gml:id="elledning-B"]/ler:geometri
+    xquery: |- 
+      delete node $doc//ler:Elledning[@gml:id="elledning-B"]/ler:geometri,
+      delete node $doc//ler:Elledning[@gml:id="elledning-B"]/ler:noejagtighedsklasse,
+      delete node $doc//ler:Elledning[@gml:id="elledning-B"]/ler:noejagtighedsklasseVertikal
     assertions: [geometriBetingelse]
