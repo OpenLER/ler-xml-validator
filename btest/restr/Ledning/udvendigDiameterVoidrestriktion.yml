@@ -1,0 +1,14 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: delete udvendigDiameter element
+    xquery: delete node $doc//ler:udvendigDiameter
+    assertions: [udvendigDiameterBetingelse]
+
+  - name: set udvendigDiameter nil
+    xquery: replace node $doc//ler:udvendigDiameter with <ler:udvendigDiameter uom="mm" xsi:nil="true"/>
+    assertions: [udvendigDiameterBetingelse, udvendigDiameterVoidrestriktion]
+    branches:
+      - name: set 2022
+        xquery: replace value of node $doc//ler:etableringstidspunkt with "2022"
+        assertions: []

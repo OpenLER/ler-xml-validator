@@ -1,0 +1,6 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: set udvendigDiameter uom cm
+    xquery: replace value of node $doc//ler:udvendigDiameter/@uom with "cm"
+    assertions: [udvendigDiameterMåleenhedsrestriktion]
