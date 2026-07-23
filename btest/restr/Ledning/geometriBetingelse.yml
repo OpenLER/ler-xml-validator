@@ -1,0 +1,8 @@
+source: $FT/Gsvar_trace.xml
+branches:
+  - name: no changes
+    xquery: ()
+    assertions: []
+  - name: fjern geometri for ledning-B
+    xquery: delete node $doc//ler:Elledning[@gml:id="elledning-B"]/ler:geometri
+    assertions: [geometriBetingelse]

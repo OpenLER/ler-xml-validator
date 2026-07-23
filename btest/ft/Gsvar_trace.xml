@@ -1,0 +1,75 @@
+<ler:Graveforespoergselssvar
+    xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    gml:id="gsvar-001"
+    schemaVersion="2.2">
+
+  <ler:id>GSVAR-001</ler:id>
+  <ler:type>ledningsoplysninger udleveret</ler:type>
+
+  <ler:ledningstraceMember>
+    <ler:Ledningstrace gml:id="trace-001">
+      <ler:driftsstatus>i drift</ler:driftsstatus>
+      <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+      <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+      <ler:geometri>
+        <gml:MultiCurve>
+          <gml:curveMember>
+            <gml:LineString srsName="EPSG:25832">
+              <gml:posList srsDimension="3">
+                700000 6200000 -99
+                700010 6200010 -99
+              </gml:posList>
+            </gml:LineString>
+          </gml:curveMember>
+        </gml:MultiCurve>
+      </ler:geometri>
+
+      <ler:forsyningsart>el</ler:forsyningsart>
+
+      <ler:indeholdtLedning xlink:href="#elledning-A"/>
+    </ler:Ledningstrace>
+  </ler:ledningstraceMember>
+
+  <ler:ledningMember>
+    <ler:Elledning gml:id="elledning-A">
+      <ler:driftsstatus>i drift</ler:driftsstatus>
+      <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+      <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+      <ler:udvendigDiameter uom="mm">20</ler:udvendigDiameter>
+
+      <ler:type>vejbelysningskabel</ler:type>
+    </ler:Elledning>
+  </ler:ledningMember>
+
+  <ler:ledningMember>
+    <ler:Elledning gml:id="elledning-B">
+      <ler:driftsstatus>i drift</ler:driftsstatus>
+      <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+      <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+      <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
+      <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal>
+
+      <ler:vejledendeDybde uom="mm">500</ler:vejledendeDybde>
+
+      <ler:geometri>
+        <gml:LineString srsName="EPSG:25832">
+          <gml:posList srsDimension="3">
+            700020 6200020 -99
+            700030 6200030 -99
+          </gml:posList>
+        </gml:LineString>
+      </ler:geometri>
+
+      <ler:udvendigDiameter uom="mm">20</ler:udvendigDiameter>
+
+      <ler:type>vejbelysningskabel</ler:type>
+    </ler:Elledning>
+  </ler:ledningMember>
+
+</ler:Graveforespoergselssvar>
