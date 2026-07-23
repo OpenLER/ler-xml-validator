@@ -1,0 +1,31 @@
+<ler:Foeringsroer
+    xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    gml:id="foeringsroer-001">
+
+  <ler:driftsstatus>i drift</ler:driftsstatus>
+  <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+  <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+  <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
+  <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal>
+
+  <ler:vejledendeDybde uom="mm">500</ler:vejledendeDybde>
+
+  <ler:geometri>
+    <gml:LineString srsName="EPSG:25832">
+      <gml:posList srsDimension="3">
+        700000 6200000 -99
+        700010 6200010 -99
+      </gml:posList>
+    </gml:LineString>
+  </ler:geometri>
+
+  <ler:udvendigDiameter uom="mm">100</ler:udvendigDiameter>
+
+  <ler:tvaersnitsform>cirkulær</ler:tvaersnitsform>
+
+  <ler:forsyningsart>el</ler:forsyningsart>
+
+</ler:Foeringsroer>

@@ -1,0 +1,12 @@
+source: $FT/Føringsrør.xml
+assertions: []
+branches:
+  - name: change forsyningsart to gas
+    xquery: replace value of node $doc//ler:forsyningsart with "gas"
+    assertions: [geometriVertikaleKoordinaterRestriktion]
+
+  - name: change forsyningsart to gas with known Z
+    xquery: |-
+      replace value of node $doc//ler:forsyningsart with "gas",
+      replace value of node $doc//gml:posList with "700000 6200000 0 700010 6200010 0"
+    assertions: []

@@ -107,3 +107,47 @@
       )
       or
       not(ler:vejledendeDybde/@xsi:nil = 'true')
+- xsdtype: ler:Foeringsroer
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  - name: primaryForsyningsart
+    expression: normalize-space(ler:forsyningsart[1])
+  assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: |-
+      not(
+        $afterCutoff
+        and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+        and normalize-space(ler:driftsstatus) != 'under etablering'
+        and $primaryForsyningsart != 'el'
+        and $primaryForsyningsart != 'telekommunikation'
+      )
+      or not($verticalUnknown)
+  - name: vejledendeDybdeBetingelse
+    expression: |-
+      not(
+        $afterCutoff
+        and $verticalUnknown
+        and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')
+      )
+      or
+      (
+        ler:vejledendeDybde
+        and not(ler:vejledendeDybde/@xsi:nil = 'true')
+        and normalize-space(ler:vejledendeDybde) != ''
+      )
+  - name: vejledendeDybdeVoidrestriktion
+    expression: |-
+      not(
+        $afterCutoff
+        and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+        and normalize-space(ler:driftsstatus) != 'under etablering'
+        and $verticalUnknown
+        and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')
+      )
+      or not(ler:vejledendeDybde/@xsi:nil = 'true')
