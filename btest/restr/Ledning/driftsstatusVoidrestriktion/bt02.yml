@@ -1,0 +1,14 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: delete driftsstatus element
+    xquery: delete node $doc//ler:driftsstatus
+    assertions: [E1]
+
+  - name: set driftsstatus nil
+    xquery: replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>
+    assertions: [driftsstatusVoidrestriktion]
+    branches:
+      - name: set 2022
+        xquery: replace value of node $doc//ler:etableringstidspunkt with "2022"
+        assertions: []
