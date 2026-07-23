@@ -1,0 +1,10 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: set spaendingsniveau kV
+    xquery: insert node <ler:spaendingsniveau uom="kV">10</ler:spaendingsniveau> as last into $doc//ler:Elledning
+    assertions: []
+
+  - name: set spaendingsniveau V
+    xquery: insert node <ler:spaendingsniveau uom="V">10000</ler:spaendingsniveau> as last into $doc//ler:Elledning
+    assertions: [spændingsniveauMåleenhedsrestriktion]

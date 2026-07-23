@@ -1,0 +1,10 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: set vejledendeDybde nil
+    xquery: replace node $doc//ler:vejledendeDybde with <ler:vejledendeDybde uom="mm" xsi:nil="true"/>
+    assertions: [vejledendeDybdeBetingelse, vejledendeDybdeVoidrestriktion]
+    branches:
+      - name: set 2022
+        xquery: replace value of node $doc//ler:etableringstidspunkt with "2022"
+        assertions: []

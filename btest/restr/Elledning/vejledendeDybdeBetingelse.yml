@@ -1,0 +1,12 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: delete vejledendeDybde element
+    xquery: delete node $doc//ler:vejledendeDybde
+    assertions: [vejledendeDybdeBetingelse]
+
+  - name: delete vejledendeDybde element with known Z
+    xquery: |-
+      delete node $doc//ler:vejledendeDybde,
+      replace value of node $doc//gml:posList with "700000 6200000 0 700010 6200010 0"
+    assertions: []
