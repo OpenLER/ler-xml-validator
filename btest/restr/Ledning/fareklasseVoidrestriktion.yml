@@ -1,0 +1,12 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: delete fareklasse element
+    xquery: delete node $doc//ler:fareklasse
+    assertions: [E1]
+  - name: set fareklasse nil
+    xquery: replace node $doc//ler:fareklasse with <ler:fareklasse xsi:nil="true"/>
+    assertions: [fareklasseVoidrestriktion]
+    branches:
+      - name: set 2022
+        xquery: replace value of node $doc//ler:etableringstidspunkt with "2022"
