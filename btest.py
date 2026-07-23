@@ -279,7 +279,11 @@ def print_results(file_results: list[FileResult], strict: bool) -> tuple[int, in
 
             assertion_indent = indent_for(r.case.depth + 1)
             expected = set(r.case.expected_codes)
-            for code in sorted(expected | r.found_codes):
+            codes = expected | r.found_codes
+            if not codes:
+                print(f"{assertion_indent}{ASSERTION_MARKER} {colorize('OK (no codes expected or found)', GREEN)}")
+                continue
+            for code in sorted(codes):
                 if code in expected and code in r.found_codes:
                     color = GREEN
                 elif code in expected:
