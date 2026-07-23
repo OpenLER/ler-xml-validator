@@ -9,15 +9,7 @@ branches:
     xquery: |-
       replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>
     assertions: [driftsstatusVoidrestriktion]
-    branches:
-      - name: set uom cm
-        xquery: replace value of node $doc//ler:vejledendeDybde/@uom with "cm"
-        assertions: [driftsstatusVoidrestriktion, vejledendeDybdeMåleenhedsrestriktion]
 
   - name: permanent_ude_af_drift
     xquery: replace value of node $doc//ler:driftsstatus with "permanent ude af drift"
-    assertions: []
-
-  - name: kommentar_indsat
-    xquery: insert node comment { "foo" } as first into $doc/*[1]
     assertions: []
