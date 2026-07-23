@@ -9,9 +9,20 @@ the unmodified source). Each branch adds one incremental XQuery Update
 Facility modification on top of its parent, and may itself carry assertions
 plus further nested branches.
 
-A test case corresponds to a node in the tree (root or branch): its XML is
-the source with every ancestor's xquery applied, in order, followed by its
-own. Every node is checked, not just leaves — this lets you assert partway
+A test case corresponds to a node in the tree (root or branch). Each node's
+XML is computed by running its own xquery against its parent's *already
+materialized* result — one XQuery Update Facility transaction per node, run
+sequentially, not one combined transaction per node covering the whole
+ancestor chain. This matters: within a single XQUF transaction, every
+target-selecting XPath is evaluated against the pristine snapshot the
+transaction started from (updates are collected into a "pending update
+list" and only applied once, at the end) — so a later step in the same
+transaction can never see or modify a node an earlier step in that same
+transaction just inserted. Running one transaction per node sidesteps this
+entirely: a branch's xquery always sees its parent's result as a real,
+already-applied tree.
+
+Every node is checked, not just leaves — this lets you assert partway
 through a chain of modifications, not only at the end of it.
 
 Node fields:
@@ -64,6 +75,7 @@ Requires a basex server to be running first, e.g.:
 import argparse
 import os
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -137,62 +149,17 @@ def parse_root(data: dict) -> BranchNode:
 
 
 # ---------------------------------------------------------------------------
-# Discovery
+# Runner
 # ---------------------------------------------------------------------------
 
 @dataclass
 class NodeCase:
     path: list[str]  # ancestor labels within the tree, e.g. [] for root, ["a", "b"] for a nested branch
-    xqueries: list[str]
     expected_codes: list[str]
 
     @property
     def depth(self) -> int:
         return len(self.path)
-
-
-@dataclass
-class FileGroup:
-    yml_rel_path: str  # e.g. "restr/elledning_2022.yml"
-    xml_path: Path
-    cases: list[NodeCase]
-
-
-def walk(node: BranchNode, path: list[str], xqueries: list[str]) -> list[NodeCase]:
-    cases = [NodeCase(path=list(path), xqueries=list(xqueries), expected_codes=node.assertions)]
-    for i, child in enumerate(node.branches):
-        label = child.name if child.name is not None else str(i)
-        cases.extend(walk(child, path=path + [label], xqueries=xqueries + [child.xquery]))
-    return cases
-
-
-def collect_tests(filter_str: str | None = None) -> list[FileGroup]:
-    groups = []
-    for yml_path in sorted(BTEST_DIR.rglob("*.yml")):
-        if "archive" in yml_path.parts:
-            continue
-        data = yaml.safe_load(yml_path.read_text()) or {}
-        xml_path = resolve_source(data["source"], yml_path.parent)
-        yml_rel_path = str(yml_path.relative_to(BTEST_DIR))
-        filter_path = str(yml_path.relative_to(BTEST_DIR).with_suffix(""))
-        root = parse_root(data)
-        cases = walk(root, path=[], xqueries=[])
-        if filter_str is not None:
-            cases = [
-                c for c in cases
-                if filter_str in "/".join([filter_path, *c.path])
-            ]
-        if cases:
-            groups.append(FileGroup(yml_rel_path=yml_rel_path, xml_path=xml_path, cases=cases))
-    return groups
-
-
-# ---------------------------------------------------------------------------
-# Runner
-# ---------------------------------------------------------------------------
-
-def combined_xquery(xqueries: list[str]) -> str:
-    return ",\n".join(xqueries) if xqueries else "()"
 
 
 @dataclass
@@ -215,32 +182,79 @@ class FileResult:
     node_results: list[NodeResult]
 
 
+def _materialize(xml: str) -> Path:
+    """Write xml to a temp file so a node's already-applied result can be
+    used as the doc() source for its children's own, separate transactions."""
+    fd, path_str = tempfile.mkstemp(suffix=".xml")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(xml)
+    return Path(path_str)
+
+
+def run_node(
+    session: object,
+    node: BranchNode,
+    path: list[str],
+    xml_source: Path,
+    validators: list,
+) -> list[NodeResult]:
+    case = NodeCase(path=list(path), expected_codes=node.assertions)
+    xquery = node.xquery if node.xquery is not None else "()"
+
+    try:
+        xml = generate_mutation(session, xml_source, xquery)
+    except Exception as e:
+        return [NodeResult(case=case, error=str(e))]
+
+    found: set[str] = set()
+    for validate_string in validators:
+        found |= {e.code for e in validate_string(xml)}
+
+    results = [NodeResult(case=case, found_codes=found)]
+
+    if node.branches:
+        tmp_path = _materialize(xml)
+        try:
+            for i, child in enumerate(node.branches):
+                label = child.name if child.name is not None else str(i)
+                results.extend(run_node(session, child, path + [label], tmp_path, validators))
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
+    return results
+
+
 def run_tests(filter_str: str | None = None) -> list[FileResult]:
     from lerxml.geometri import validate_string as geometri_validate_string
     from lerxml.xsd import validate_string as xsd_validate_string
     from lerxml.xta import validate_string as xta_validate_string
 
+    validators = [xsd_validate_string, xta_validate_string, geometri_validate_string]
+
     session = connect()
     try:
         file_results = []
-        for group in collect_tests(filter_str):
-            node_results = []
-            for case in group.cases:
-                try:
-                    xml = generate_mutation(session, group.xml_path, combined_xquery(case.xqueries))
-                    found = (
-                        {e.code for e in xsd_validate_string(xml)}
-                        | {e.code for e in xta_validate_string(xml)}
-                        | {e.code for e in geometri_validate_string(xml)}
-                    )
-                    node_results.append(NodeResult(case=case, found_codes=found))
-                except Exception as e:
-                    node_results.append(NodeResult(case=case, error=str(e)))
-            file_results.append(FileResult(
-                yml_rel_path=group.yml_rel_path,
-                xml_path=group.xml_path,
-                node_results=node_results,
-            ))
+        for yml_path in sorted(BTEST_DIR.rglob("*.yml")):
+            if "archive" in yml_path.parts:
+                continue
+            data = yaml.safe_load(yml_path.read_text()) or {}
+            xml_path = resolve_source(data["source"], yml_path.parent)
+            yml_rel_path = str(yml_path.relative_to(BTEST_DIR))
+            filter_path = str(yml_path.relative_to(BTEST_DIR).with_suffix(""))
+            root = parse_root(data)
+
+            node_results = run_node(session, root, [], xml_path, validators)
+            if filter_str is not None:
+                node_results = [
+                    r for r in node_results
+                    if filter_str in "/".join([filter_path, *r.case.path])
+                ]
+            if node_results:
+                file_results.append(FileResult(
+                    yml_rel_path=yml_rel_path,
+                    xml_path=xml_path,
+                    node_results=node_results,
+                ))
         return file_results
     finally:
         session.close()
