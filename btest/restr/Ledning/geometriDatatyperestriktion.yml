@@ -1,0 +1,68 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: curve_et_segment
+    xquery: |-
+      replace node $doc//ler:geometri/gml:LineString with
+        <gml:Curve srsName="EPSG:25832">
+          <gml:segments>
+            <gml:LineStringSegment>
+              <gml:posList srsDimension="3">700000 6200000 -99 700010 6200010 -99</gml:posList>
+            </gml:LineStringSegment>
+          </gml:segments>
+        </gml:Curve>
+    assertions: []
+
+  - name: curve_flere_segmenter
+    xquery: |-
+      replace node $doc//ler:geometri/gml:LineString with
+        <gml:Curve srsName="EPSG:25832">
+          <gml:segments>
+            <gml:LineStringSegment>
+              <gml:posList srsDimension="3">700000 6200000 -99 700005 6200005 -99</gml:posList>
+            </gml:LineStringSegment>
+            <gml:LineStringSegment>
+              <gml:posList srsDimension="3">700005 6200005 -99 700010 6200010 -99</gml:posList>
+            </gml:LineStringSegment>
+          </gml:segments>
+        </gml:Curve>
+    assertions: []
+
+  - name: curve_forkert_segment
+    xquery: |-
+      replace node $doc//ler:geometri/gml:LineString with
+        <gml:Curve srsName="EPSG:25832">
+          <gml:segments>
+            <gml:ArcString>
+              <gml:posList srsDimension="3">700000 6200000 -99 700005 6200003 -99 700010 6200000 -99</gml:posList>
+            </gml:ArcString>
+          </gml:segments>
+        </gml:Curve>
+    assertions: [geometriDatatyperestriktion]
+
+  - name: curve_blandet
+    xquery: |-
+      replace node $doc//ler:geometri/gml:LineString with
+        <gml:Curve srsName="EPSG:25832">
+          <gml:segments>
+            <gml:LineStringSegment>
+              <gml:posList srsDimension="3">700000 6200000 -99 700005 6200005 -99</gml:posList>
+            </gml:LineStringSegment>
+            <gml:ArcString>
+              <gml:posList srsDimension="3">700005 6200005 -99 700007 6200008 -99 700010 6200010 -99</gml:posList>
+            </gml:ArcString>
+          </gml:segments>
+        </gml:Curve>
+    assertions: [geometriDatatyperestriktion]
+
+  - name: orientable_curve
+    xquery: |-
+      replace node $doc//ler:geometri/gml:LineString with
+        <gml:OrientableCurve orientation="+">
+          <gml:baseCurve>
+            <gml:LineString srsName="EPSG:25832">
+              <gml:posList srsDimension="3">700000 6200000 -99 700010 6200010 -99</gml:posList>
+            </gml:LineString>
+          </gml:baseCurve>
+        </gml:OrientableCurve>
+    assertions: [geometriDatatyperestriktion]
