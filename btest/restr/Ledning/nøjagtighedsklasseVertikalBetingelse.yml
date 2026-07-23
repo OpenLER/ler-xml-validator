@@ -1,0 +1,13 @@
+source: $FT/Gsvar_trace.xml
+branches:
+  - name: no changes
+    xquery: ()
+    assertions: []
+  - name: fjern nøjagtighedsklasseVertikal for ledning-B
+    xquery: |-
+      delete node $doc//ler:Elledning[@gml:id="elledning-B"]/ler:noejagtighedsklasseVertikal
+    assertions: [nøjagtighedsklasseVertikalBetingelse]
+  - name: tilføj nøjagtighedsklasseVertikal for ledning-A
+    xquery: |-
+      insert node <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal> before $doc//ler:Elledning[@gml:id="elledning-A"]/ler:udvendigDiameter
+    assertions: [nøjagtighedsklasseVertikalBetingelse]

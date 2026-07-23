@@ -1,0 +1,13 @@
+source: $FT/Gsvar_trace.xml
+branches:
+  - name: no changes
+    xquery: ()
+    assertions: []
+  - name: fjern nøjagtighedsklasse for ledning-B
+    xquery: |-
+      delete node $doc//ler:Elledning[@gml:id="elledning-B"]/ler:noejagtighedsklasse
+    assertions: [nøjagtighedsklasseBetingelse]
+  - name: tilføj nøjagtighedsklasse for ledning-A
+    xquery: |-
+      insert node <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse> before $doc//ler:Elledning[@gml:id="elledning-A"]/ler:udvendigDiameter
+    assertions: [nøjagtighedsklasseBetingelse]
