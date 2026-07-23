@@ -128,7 +128,8 @@ _CACHE = _build_cache()
 
 def _evaluate(expr: str, node, variables: dict) -> object:
     token = _PARSER.parse(expr)
-    ctx = elementpath.XPathContext(root=node, item=node, variables=variables)
+    root = node.getroottree().getroot()
+    ctx = elementpath.XPathContext(root=root, item=node, variables=variables)
     return token.evaluate(ctx)
 
 
