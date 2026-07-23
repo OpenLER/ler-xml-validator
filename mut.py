@@ -16,6 +16,15 @@ Usage:
   python mut.py
   python mut.py --strict
   python mut.py --report
+  python mut.py -k elledning_2022
+  python mut.py -k srsDimension -r
+  python mut.py -k restriktioner
+
+-k/--filter matches test IDs (e.g. "restriktioner/elledning_2022-03") by
+substring, the same way pytest's -k does; only mutations whose test ID
+contains the given string are run. Since the test ID includes the path
+relative to mut/, this also lets you filter by folder (e.g. -k restriktioner
+or -k andre_krav).
 
 Requires a basex server to be running first, e.g.:
   basexserver -p1984
@@ -82,7 +91,7 @@ class MutationResult:
 # Discovery
 # ---------------------------------------------------------------------------
 
-def collect_mutations() -> list[tuple[str, Path, str, list[str], list[str]]]:
+def collect_mutations(filter_str: str | None = None) -> list[tuple[str, Path, str, list[str], list[str]]]:
     mutations = []
     for yml_path in sorted(DATA_DIR.rglob("*.yml")):
         if "archive" in yml_path.parts:
@@ -96,7 +105,10 @@ def collect_mutations() -> list[tuple[str, Path, str, list[str], list[str]]]:
             xquery       = entry.get("xquery", "()")
             xsd_codes    = entry.get("xsd_codes", [])
             sch_codes    = entry.get("sch_codes", [])
-            test_id      = f"{xml_path.stem}-{entry_id}"
+            rel_path     = xml_path.relative_to(DATA_DIR).with_suffix("")
+            test_id      = f"{rel_path}-{entry_id}"
+            if filter_str is not None and filter_str not in test_id:
+                continue
             mutations.append((test_id, xml_path, xquery, xsd_codes, sch_codes))
     return mutations
 
@@ -147,11 +159,11 @@ def connect() -> Session:
         sys.exit(1)
 
 
-def run_mutations() -> list[MutationResult]:
+def run_mutations(filter_str: str | None = None) -> list[MutationResult]:
     session = connect()
     try:
         results = []
-        for test_id, xml_path, xquery, xsd_codes, sch_codes in collect_mutations():
+        for test_id, xml_path, xquery, xsd_codes, sch_codes in collect_mutations(filter_str):
             try:
                 xml = generate_mutation(session, xml_path, xquery)
                 found_xsd = {e.code for e in xsd_validate_string(xml)}
@@ -290,13 +302,22 @@ def main() -> None:
         help="Fail if found codes don't match expected codes exactly",
     )
     mode.add_argument(
-        "--report",
+        "-r", "--report",
         action="store_true",
         help="Print a full table of mutations and found codes; never fail",
     )
+    parser.add_argument(
+        "-k", "--filter",
+        dest="filter_str",
+        default=None,
+        help="Only run mutations whose test ID contains this substring",
+    )
     args = parser.parse_args()
 
-    results = run_mutations()
+    results = run_mutations(args.filter_str)
+    if not results:
+        print(f"No mutations matched filter {args.filter_str!r}", file=sys.stderr)
+        sys.exit(1)
 
     if args.report:
         print_report(results)
