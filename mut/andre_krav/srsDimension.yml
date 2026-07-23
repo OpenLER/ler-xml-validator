@@ -1,32 +1,25 @@
 - id: 01
   xquery: ()
-  xsd_codes: []
-  sch_codes: []
+  expected: []
 - id: 02
   xquery: delete node $doc//@srsDimension
-  xsd_codes: []
-  sch_codes: [XYZ1]
+  expected: [XYZ1]
 - id: 03
   xquery: replace value of node $doc//@srsDimension with "2"
-  xsd_codes: []
-  sch_codes: [XYZ2]
+  expected: [XYZ2]
 - id: 04
   xquery: replace value of node $doc//@srsDimension with "4"
-  xsd_codes: []
-  sch_codes: [XYZ2]
+  expected: [XYZ2]
 - id: 05
   xquery: insert node attribute srsDimension {"4"} into $doc//gml:LineString
-  xsd_codes: []
-  sch_codes: [XYZ2]
+  expected: [XYZ2]
 - id: 06
   xquery: |-
     replace value of node $doc//@srsDimension with "4",
     insert node attribute srsDimension {"4"} into $doc//gml:LineString
-  xsd_codes: []
-  sch_codes: [XYZ2]
+  expected: [XYZ2]
 - id: 07
   xquery: |-
     delete node $doc//@srsDimension,
     insert node attribute srsDimension {"4"} into $doc//gml:LineString
-  xsd_codes: []
-  sch_codes: [XYZ2]
+  expected: [XYZ2]

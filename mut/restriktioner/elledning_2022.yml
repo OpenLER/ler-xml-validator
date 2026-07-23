@@ -1,20 +1,21 @@
 - id: 01
   xquery: ()
-  xsd_codes: []
-  sch_codes: []
+  expected: []
 - id: 02
   xquery: delete node $doc//ler:driftsstatus
-  xsd_codes: []
-  sch_codes: [EL1]
+  expected: [E1]
 - id: 03
-  xquery: replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>
-  xsd_codes: []
-  sch_codes: [EL2, EL3]
+  xquery: |-
+    replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>
+  expected: []
 - id: 04
-  xquery: replace value of node $doc//ler:driftsstatus with "ude af drift"
-  xsd_codes: []
-  sch_codes: []
+  xquery: |-
+    replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>,
+    replace value of node $doc//ler:etableringstidspunkt with "2024-01-01"
+  expected: [driftsstatusVoidrestriktion]
 - id: 05
+  xquery: replace value of node $doc//ler:driftsstatus with "ude af drift"
+  expected: []
+- id: 06
   xquery: insert node comment { "foo" } as first into $doc/*[1]
-  xsd_codes: []
-  sch_codes: []
+  expected: []

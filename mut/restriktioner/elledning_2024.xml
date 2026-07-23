@@ -7,18 +7,20 @@
   <ler:driftsstatus>i drift</ler:driftsstatus>
   <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
   <ler:fareklasse>ikke farlig</ler:fareklasse>
+  <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
+  <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal>
+  <ler:vejledendeDybde uom="mm">500</ler:vejledendeDybde>
 
   <ler:geometri >
     <gml:LineString srsName="EPSG:25832">
       <gml:posList srsDimension="3">
-        700000 6200000 0
-        700010 6200010 0
+        700000 6200000 -99
+        700010 6200010 -99
       </gml:posList>
     </gml:LineString>
   </ler:geometri>
 
   <ler:udvendigDiameter uom="mm">20</ler:udvendigDiameter>
   <ler:type>vejbelysningskabel</ler:type>
-
 
 </ler:Elledning>

@@ -5,7 +5,7 @@ mut.py — mutation test runner for lerxml.
 For each foo.xml / foo.yml pair under tests/data/ (skipping archive/),
 generates each mutation on the fly by running its XQuery Update Facility
 expression against a running basex server, and validates the result with
-both the lerxml XSD and schematron validators.
+the lerxml xsd and xta validators.
 
 Modes:
   default   Fail if any expected code is missing from the found codes (subset check)
@@ -48,8 +48,8 @@ from lxml import etree
 sys.path.insert(0, str(Path(__file__).parent / "vendor" / "basexclient"))
 from BaseXClient import Session
 
-from lerxml.schematron import validate_string as sch_validate_string
 from lerxml.xsd import validate_string as xsd_validate_string
+from lerxml.xta import validate_string as xta_validate_string
 
 DATA_DIR = Path(__file__).parent / "mut"
 
@@ -68,30 +68,22 @@ class MutationResult:
     test_id: str
     xml_path: Path
     xquery: str
-    expected_xsd_codes: list[str]
-    expected_sch_codes: list[str]
-    found_xsd_codes: set[str] = field(default_factory=set)
-    found_sch_codes: set[str] = field(default_factory=set)
+    expected_codes: list[str]
+    found_codes: set[str] = field(default_factory=set)
     error: str | None = None
 
     def check_subset(self) -> bool:
-        return (
-            set(self.expected_xsd_codes).issubset(self.found_xsd_codes)
-            and set(self.expected_sch_codes).issubset(self.found_sch_codes)
-        )
+        return set(self.expected_codes).issubset(self.found_codes)
 
     def check_exact(self) -> bool:
-        return (
-            set(self.expected_xsd_codes) == self.found_xsd_codes
-            and set(self.expected_sch_codes) == self.found_sch_codes
-        )
+        return set(self.expected_codes) == self.found_codes
 
 
 # ---------------------------------------------------------------------------
 # Discovery
 # ---------------------------------------------------------------------------
 
-def collect_mutations(filter_str: str | None = None) -> list[tuple[str, Path, str, list[str], list[str]]]:
+def collect_mutations(filter_str: str | None = None) -> list[tuple[str, Path, str, list[str]]]:
     mutations = []
     for yml_path in sorted(DATA_DIR.rglob("*.yml")):
         if "archive" in yml_path.parts:
@@ -103,13 +95,12 @@ def collect_mutations(filter_str: str | None = None) -> list[tuple[str, Path, st
         for entry in entries:
             entry_id     = str(entry["id"])
             xquery       = entry.get("xquery", "()")
-            xsd_codes    = entry.get("xsd_codes", [])
-            sch_codes    = entry.get("sch_codes", [])
+            expected     = entry.get("expected", [])
             rel_path     = xml_path.relative_to(DATA_DIR).with_suffix("")
             test_id      = f"{rel_path}-{entry_id}"
             if filter_str is not None and filter_str not in test_id:
                 continue
-            mutations.append((test_id, xml_path, xquery, xsd_codes, sch_codes))
+            mutations.append((test_id, xml_path, xquery, expected))
     return mutations
 
 
@@ -163,27 +154,26 @@ def run_mutations(filter_str: str | None = None) -> list[MutationResult]:
     session = connect()
     try:
         results = []
-        for test_id, xml_path, xquery, xsd_codes, sch_codes in collect_mutations(filter_str):
+        for test_id, xml_path, xquery, expected in collect_mutations(filter_str):
             try:
                 xml = generate_mutation(session, xml_path, xquery)
-                found_xsd = {e.code for e in xsd_validate_string(xml)}
-                found_sch = {e.code for e in sch_validate_string(xml)}
+                found = (
+                    {e.code for e in xsd_validate_string(xml)}
+                    | {e.code for e in xta_validate_string(xml)}
+                )
                 results.append(MutationResult(
                     test_id=test_id,
                     xml_path=xml_path,
                     xquery=xquery,
-                    expected_xsd_codes=xsd_codes,
-                    expected_sch_codes=sch_codes,
-                    found_xsd_codes=found_xsd,
-                    found_sch_codes=found_sch,
+                    expected_codes=expected,
+                    found_codes=found,
                 ))
             except Exception as e:
                 results.append(MutationResult(
                     test_id=test_id,
                     xml_path=xml_path,
                     xquery=xquery,
-                    expected_xsd_codes=xsd_codes,
-                    expected_sch_codes=sch_codes,
+                    expected_codes=expected,
                     error=str(e),
                 ))
         return results
@@ -209,18 +199,17 @@ def fmt(codes: set[str] | list[str]) -> str:
     return ", ".join(sorted(codes)) if codes else "(none)"
 
 
-def fmt_cell(expected: list[str], found: set[str], width: int) -> str:
-    """Return a padded, colored string for a found-codes cell."""
+def fmt_cell(expected: list[str], found: set[str]) -> str:
+    """Return a colored string for a found-codes cell."""
     text = fmt(found)
-    padded = f"{text:<{width}}"
     expected_set = set(expected)
     if expected_set == found:
-        return colorize(padded, GREEN)
+        return colorize(text, GREEN)
     elif expected_set.issubset(found):
         # Expected codes present but extra codes also fired
-        return colorize(padded, YELLOW)
+        return colorize(text, YELLOW)
     else:
-        return colorize(padded, RED)
+        return colorize(text, RED)
 
 
 # ---------------------------------------------------------------------------
@@ -229,8 +218,7 @@ def fmt_cell(expected: list[str], found: set[str], width: int) -> str:
 
 def print_report(results: list[MutationResult]) -> None:
     col_id = max(len(r.test_id) for r in results)
-    w = 20
-    header = f"{'TEST':<{col_id}}  {'XSD expected':<{w}}  {'XSD found':<{w}}  {'SCH expected':<{w}}  SCH found"
+    header = f"{'TEST':<{col_id}}  {'EXPECTED':<30}  FOUND"
     print(header)
     print("-" * len(header))
 
@@ -240,10 +228,8 @@ def print_report(results: list[MutationResult]) -> None:
             continue
         print(
             f"{r.test_id:<{col_id}}"
-            f"  {fmt(r.expected_xsd_codes):<{w}}"
-            f"  {fmt_cell(r.expected_xsd_codes, r.found_xsd_codes, w)}"
-            f"  {fmt(r.expected_sch_codes):<{w}}"
-            f"  {fmt_cell(r.expected_sch_codes, r.found_sch_codes, w)}"
+            f"  {fmt(r.expected_codes):<30}"
+            f"  {fmt_cell(r.expected_codes, r.found_codes)}"
         )
 
 
@@ -258,29 +244,18 @@ def print_summary(results: list[MutationResult], strict: bool) -> tuple[int, int
         ok = r.check_exact() if strict else r.check_subset()
         if not ok:
             lines = [f"  FAIL   {r.test_id}:"]
+            missing = set(r.expected_codes) - r.found_codes
+            extra   = r.found_codes - set(r.expected_codes)
             if strict:
-                xsd_missing = set(r.expected_xsd_codes) - r.found_xsd_codes
-                xsd_extra   = r.found_xsd_codes - set(r.expected_xsd_codes)
-                sch_missing = set(r.expected_sch_codes) - r.found_sch_codes
-                sch_extra   = r.found_sch_codes - set(r.expected_sch_codes)
-                if xsd_missing: lines.append(f"           xsd missing={sorted(xsd_missing)}")
-                if xsd_extra:   lines.append(f"           xsd unexpected={sorted(xsd_extra)}")
-                if sch_missing: lines.append(f"           sch missing={sorted(sch_missing)}")
-                if sch_extra:   lines.append(f"           sch unexpected={sorted(sch_extra)}")
+                if missing: lines.append(f"           missing={sorted(missing)}")
+                if extra:   lines.append(f"           unexpected={sorted(extra)}")
             else:
-                xsd_missing = set(r.expected_xsd_codes) - r.found_xsd_codes
-                sch_missing = set(r.expected_sch_codes) - r.found_sch_codes
-                if xsd_missing: lines.append(f"           xsd missing={sorted(xsd_missing)}, got={sorted(r.found_xsd_codes)}")
-                if sch_missing: lines.append(f"           sch missing={sorted(sch_missing)}, got={sorted(r.found_sch_codes)}")
+                if missing: lines.append(f"           missing={sorted(missing)}, got={sorted(r.found_codes)}")
             print("\n".join(lines))
             failures += 1
         else:
-            extras = []
-            xsd_extra = r.found_xsd_codes - set(r.expected_xsd_codes)
-            sch_extra = r.found_sch_codes - set(r.expected_sch_codes)
-            if xsd_extra: extras.append(f"xsd also triggered: {sorted(xsd_extra)}")
-            if sch_extra: extras.append(f"sch also triggered: {sorted(sch_extra)}")
-            extra_str = f"  ({', '.join(extras)})" if extras and not strict else ""
+            extra = r.found_codes - set(r.expected_codes)
+            extra_str = f"  (also triggered: {sorted(extra)})" if extra and not strict else ""
             print(f"  PASS   {r.test_id}{extra_str}")
 
     return len(results), failures
