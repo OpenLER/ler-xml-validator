@@ -162,6 +162,12 @@
     expression: 'not(starts-with(ler:sti, ''/''))
 
       and not(matches(ler:sti, ''^[a-zA-Z][a-zA-Z0-9+.-]*:''))'
+- xsdtype: ler:Kontaktprofil
+  assertions:
+  - name: mailadresseBetingelse
+    expression: ler:telefonnummer or ler:mailadresse
+  - name: telefonnummerBetingelse
+    expression: ler:mailadresse or ler:telefonnummer
 - xsdtype: ler:Ledning
   variables:
   - name: ownRef

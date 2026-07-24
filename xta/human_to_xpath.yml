@@ -587,3 +587,9 @@
     or (normalize-space(ler:format) = 'TIFF' and ler:format/@type = 'image/tiff')
     or (normalize-space(ler:format) = 'XLS' and ler:format/@type = 'application/vnd.ms-excel')
     or (normalize-space(ler:format) = 'XLSX' and ler:format/@type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+- text: Mailadressen skal være angivet hvis ikke telefonnummeret er angivet.
+  expression: ler:telefonnummer or ler:mailadresse
+
+- text: Telefonnummeret skal være angivet hvis ikke mailadressen er angivet.
+  expression: ler:mailadresse or ler:telefonnummer
