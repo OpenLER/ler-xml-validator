@@ -30,6 +30,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
   - name: udvendigBreddeMåleenhedsrestriktion
     expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
   - name: udvendigDiameterBetingelse
@@ -158,6 +160,8 @@
   - name: isCirkulaer
     expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
   assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
   - name: udvendigBreddeMåleenhedsrestriktion
     expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
   - name: udvendigHøjdeMåleenhedsrestriktion

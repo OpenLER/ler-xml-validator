@@ -405,3 +405,6 @@
     Supplerende information om graveforespørgsselsvaret skal være angivet hvis typen af graveforespørgsselsvaret er "ledningsoplysninger udleveres ikke".
     Supplerende information om graveforespørgsselsvaret må godt være angivet hvis typen af graveforespørgsselsvaret ikke er "ledningsoplysninger udleveres ikke".
   expression: normalize-space(ler:type) != 'ledningsoplysninger udleveres ikke' or ler:typeSupplerendeInfo
+
+- text: En vertikal koordinat i geometrien må ikke være ukendt-værdien på -99 hvis etableringstidspunktet er efter skæringsdatoen.
+  expression: not($afterCutoff) or not($verticalUnknown)

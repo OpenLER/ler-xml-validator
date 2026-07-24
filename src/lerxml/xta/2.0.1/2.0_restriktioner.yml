@@ -19,6 +19,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
 - xsdtype: ler:AndenLedning
   variables:
   - name: zValues
@@ -30,6 +32,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
   - name: udvendigBreddeMåleenhedsrestriktion
     expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
   - name: udvendigDiameterBetingelse
@@ -70,6 +74,8 @@
     expression: '(number(ler:tryk) >= 19 and normalize-space(ler:fareklasse) = ''meget farlig'')
 
       or (not(number(ler:tryk) >= 19) and normalize-space(ler:fareklasse) != ''meget farlig'')'
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Graveforespoergselssvar
@@ -151,6 +157,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Roerledning
@@ -179,6 +187,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: "(\n  (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) = 'meget farlig'\n)\nor\n(\n  not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) != 'meget farlig'\n)"
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Vandledning
@@ -192,3 +202,5 @@
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: not($afterCutoff) or not($verticalUnknown)
