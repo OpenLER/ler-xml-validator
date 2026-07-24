@@ -511,50 +511,51 @@
           local-name($geom) = 'MultiSurface'
           and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])
         )
+    - name: polygonGrænseLineærInterpolation
+      message: "Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface."
+      expression: |-
+        not($geom)
+        or not(local-name($geom) = 'Polygon')
+        or not($geom/(gml:exterior | gml:interior)/*[
+          not(self::gml:LinearRing)
+          and not(
+            self::gml:Ring
+            and not(gml:curveMember/*[
+              not(self::gml:LineString)
+              and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+            ])
+          )
+        ])
     - name: fladeGrænseLineærInterpolation
       message: "Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface."
       expression: |-
         not($geom)
-        or not(local-name($geom) = ('Polygon', 'Surface', 'MultiSurface'))
-        or (
-          local-name($geom) = 'Polygon'
-          and not($geom/(gml:exterior | gml:interior)/*[
-            not(self::gml:LinearRing)
-            and not(
-              self::gml:Ring
-              and not(gml:curveMember/*[
-                not(self::gml:LineString)
-                and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
-              ])
-            )
-          ])
-        )
-        or (
-          local-name($geom) = 'Surface'
-          and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[
-            not(self::gml:LinearRing)
-            and not(
-              self::gml:Ring
-              and not(gml:curveMember/*[
-                not(self::gml:LineString)
-                and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
-              ])
-            )
-          ])
-        )
-        or (
-          local-name($geom) = 'MultiSurface'
-          and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[
-            not(self::gml:LinearRing)
-            and not(
-              self::gml:Ring
-              and not(gml:curveMember/*[
-                not(self::gml:LineString)
-                and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
-              ])
-            )
-          ])
-        )
+        or not(local-name($geom) = 'Surface')
+        or not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[
+          not(self::gml:LinearRing)
+          and not(
+            self::gml:Ring
+            and not(gml:curveMember/*[
+              not(self::gml:LineString)
+              and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+            ])
+          )
+        ])
+    - name: multifladeGrænseLineærInterpolation
+      message: "Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface."
+      expression: |-
+        not($geom)
+        or not(local-name($geom) = 'MultiSurface')
+        or not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[
+          not(self::gml:LinearRing)
+          and not(
+            self::gml:Ring
+            and not(gml:curveMember/*[
+              not(self::gml:LineString)
+              and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+            ])
+          )
+        ])
 
 - text: |-
     Forsyningsarten må ikke være en af de prædefinerede værdier fra kodelisten Forsyningsart.
