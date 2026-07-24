@@ -62,6 +62,21 @@ def _check_unique_names(xsdtype: str, kind: str, items: list[dict]) -> None:
         seen.add(name)
 
 
+def _check_assertion_shape(xsdtype: str, assertion: dict) -> None:
+    """Hver assertion har enten en flad 'expression' eller en liste af 'sub_assertions'
+    (aldrig begge, aldrig ingen af delene) - og sub_assertion-navne skal være unikke
+    inden for deres egen assertion."""
+    has_expression = "expression" in assertion
+    has_subs = "sub_assertions" in assertion
+    if has_expression == has_subs:
+        raise ValueError(
+            f"xta: assertion '{assertion['name']}' (xsdtype '{xsdtype}') skal have enten "
+            f"'expression' eller 'sub_assertions', ikke begge/ingen"
+        )
+    if has_subs:
+        _check_unique_names(xsdtype, f"sub_assertions of {assertion['name']}", assertion["sub_assertions"])
+
+
 def _load_by_xsdtype(version: str) -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
     """Indlæs variabler og assertions fra src/lerxml/xta/{version}/*.yml (bygget af
     build_xta.py), nøglet på xsdtype (uden præfiks)."""
@@ -77,6 +92,8 @@ def _load_by_xsdtype(version: str) -> tuple[dict[str, list[dict]], dict[str, lis
             assertions = entry.get("assertions", [])
             _check_unique_names(xsdtype, "variables", variables)
             _check_unique_names(xsdtype, "assertions", assertions)
+            for assertion in assertions:
+                _check_assertion_shape(xsdtype, assertion)
             variables_by_type.setdefault(xsdtype, []).extend(variables)
             assertions_by_type.setdefault(xsdtype, []).extend(assertions)
     return variables_by_type, assertions_by_type
@@ -178,6 +195,20 @@ def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Vali
             variables[var["name"]] = _evaluate(var["expression"], elem, root_node, variables)
 
         for assertion in assertions:
+            if "sub_assertions" in assertion:
+                failed = [
+                    sub for sub in assertion["sub_assertions"]
+                    if not _evaluate(sub["expression"], elem, root_node, variables)
+                ]
+                if failed:
+                    yield ValidationError(
+                        code=assertion["name"],
+                        message="; ".join(sub["message"] for sub in failed),
+                        location=doc.getpath(elem),
+                        sub_codes=[sub["name"] for sub in failed],
+                    )
+                continue
+
             ok = _evaluate(assertion["expression"], elem, root_node, variables)
             if not ok:
                 yield ValidationError(

@@ -45,14 +45,20 @@ def normalize(text: str) -> str:
     return text.strip()
 
 
-def load_dictionary() -> dict[str, str]:
+def load_dictionary() -> dict[str, dict]:
+    """Nøglet på officiel tekst; værdien er enten {"expression": ...} eller
+    {"sub_assertions": [...]} - begge tilfælde bliver splattet direkte ind i
+    assertion-blokken i build_version()."""
     entries = yaml.safe_load(DICTIONARY_PATH.read_text()) or []
-    lookup: dict[str, str] = {}
+    lookup: dict[str, dict] = {}
     for entry in entries:
         key = normalize(entry["text"])
         if key in lookup:
             raise ValueError(f"human_to_xpath.yml: dublet-tekst: {key!r}")
-        lookup[key] = entry["expression"]
+        if "expression" in entry:
+            lookup[key] = {"expression": entry["expression"]}
+        else:
+            lookup[key] = {"sub_assertions": entry["sub_assertions"]}
     return lookup
 
 
@@ -64,7 +70,7 @@ def load_variables() -> dict[str, list[dict]]:
 def build_version(
     version: str,
     featurekatalog: Path,
-    dictionary: dict[str, str],
+    dictionary: dict[str, dict],
     variables_by_type: dict[str, list[dict]],
 ) -> tuple[list[dict], list[tuple[str, str, str, str]]]:
     """Return (xta rule blocks, gaps). gaps = [(version, feature_type, assertion_name, text)]."""
@@ -80,11 +86,11 @@ def build_version(
         assertions = []
         for entry in entries:
             text = normalize(entry["expression"])
-            expression = dictionary.get(text)
-            if expression is None:
+            looked_up = dictionary.get(text)
+            if looked_up is None:
                 gaps.append((version, feature_type, entry["name"], text))
                 continue
-            assertions.append({"name": entry["name"], "expression": expression})
+            assertions.append({"name": entry["name"], **looked_up})
 
         if not assertions:
             continue

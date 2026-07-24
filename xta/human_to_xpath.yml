@@ -6,6 +6,17 @@
 # samme navn kan betyde noget forskelligt for forskellige xsdtyper (fx
 # udvendigDiameterBetingelse for Elledning vs. Rørledning), men samme tekst betyder
 # altid det samme, uanset hvilken feature type eller version den optræder i.
+#
+# Hver entry har enten:
+#   expression: <ét xpath-udtryk>              (almindeligt tilfælde)
+# eller:
+#   sub_assertions:                             (når restriktionsteksten reelt dækker
+#     - name: ...                                flere uafhængigt diagnosticerbare
+#       expression: ...                          "skal"-krav - alle skal holde, men
+#       message: ...                             fejl rapporteres stadig under ét
+#                                                 officielt code/navn, med sub_codes
+#                                                 for hvilke(t) sub_assertion(s) der
+#                                                 fejlede)
 
 - text: Måleenheden for den vejledende dybde i forhold til terræn ved etablering skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
   expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
@@ -459,62 +470,91 @@
     Note: I en GML-indkodning betyder det, at en grænse af en flade eller en multiflade skal have en af følgende geometrityper [GML SF]:
     * gml:LinearRing
     * gml:Ring som består af kurver der anvender lineær interpolation (se ovenfor)
-  expression: |-
-    not($geom)
-    or local-name($geom) = ('Point', 'MultiPoint')
-    or local-name($geom) = 'LineString'
-    or (
-      local-name($geom) = 'Curve'
-      and not($geom/gml:segments/*[not(local-name() = 'LineStringSegment')])
-    )
-    or (
-      local-name($geom) = 'MultiCurve'
-      and not($geom//gml:curveMember/*[
-        not(self::gml:LineString)
-        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
-      ])
-    )
-    or (
-      local-name($geom) = 'Polygon'
-      and not($geom/(gml:exterior | gml:interior)/*[
-        not(self::gml:LinearRing)
-        and not(
-          self::gml:Ring
-          and not(gml:curveMember/*[
+  # Officielt ét code (geometriDatatyperestriktion), men teksten dækker reelt 4
+  # uafhængige "skal"-krav (ignorerer man Note-linjerne) - opdelt her som
+  # sub_assertions for bedre diagnostik. De 4 kombineres med AND (som guarded
+  # implikationer: "hvis geometrien er af denne type, skal denne struktur gælde",
+  # vacuously true når typen ikke er relevant) - logisk ækvivalent med den
+  # oprindelige ét-stort-OR-udtryk (tjekket gren for gren, se git-historik).
+  sub_assertions:
+    - name: geometriTypeTilladt
+      message: "Geometrien skal have en af følgende typer: GM_Point, GM_MultiPoint, GM_Curve, GM_MultiCurve, GM_Surface eller GM_MultiSurface."
+      expression: |-
+        not($geom)
+        or local-name($geom) = ('Point', 'MultiPoint', 'LineString', 'Curve', 'MultiCurve', 'Polygon', 'Surface', 'MultiSurface')
+    - name: kurveLineærInterpolation
+      message: "Geometrien skal anvende lineær interpolation hvis dens type er GM_Curve eller GM_MultiCurve."
+      expression: |-
+        not($geom)
+        or not(local-name($geom) = ('Curve', 'MultiCurve'))
+        or (
+          local-name($geom) = 'Curve'
+          and not($geom/gml:segments/*[not(local-name() = 'LineStringSegment')])
+        )
+        or (
+          local-name($geom) = 'MultiCurve'
+          and not($geom//gml:curveMember/*[
             not(self::gml:LineString)
             and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
           ])
         )
-      ])
-    )
-    or (
-      local-name($geom) = 'Surface'
-      and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])
-      and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[
-        not(self::gml:LinearRing)
-        and not(
-          self::gml:Ring
-          and not(gml:curveMember/*[
-            not(self::gml:LineString)
-            and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+    - name: fladePlanInterpolation
+      message: 'Geometrien skal anvende 2-dimensionel interpolation ("planar interpolation") hvis dens type er GM_Surface eller GM_MultiSurface.'
+      expression: |-
+        not($geom)
+        or not(local-name($geom) = ('Surface', 'MultiSurface'))
+        or (
+          local-name($geom) = 'Surface'
+          and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])
+        )
+        or (
+          local-name($geom) = 'MultiSurface'
+          and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])
+        )
+    - name: fladeGrænseLineærInterpolation
+      message: "Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface."
+      expression: |-
+        not($geom)
+        or not(local-name($geom) = ('Polygon', 'Surface', 'MultiSurface'))
+        or (
+          local-name($geom) = 'Polygon'
+          and not($geom/(gml:exterior | gml:interior)/*[
+            not(self::gml:LinearRing)
+            and not(
+              self::gml:Ring
+              and not(gml:curveMember/*[
+                not(self::gml:LineString)
+                and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+              ])
+            )
           ])
         )
-      ])
-    )
-    or (
-      local-name($geom) = 'MultiSurface'
-      and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])
-      and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[
-        not(self::gml:LinearRing)
-        and not(
-          self::gml:Ring
-          and not(gml:curveMember/*[
-            not(self::gml:LineString)
-            and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+        or (
+          local-name($geom) = 'Surface'
+          and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[
+            not(self::gml:LinearRing)
+            and not(
+              self::gml:Ring
+              and not(gml:curveMember/*[
+                not(self::gml:LineString)
+                and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+              ])
+            )
           ])
         )
-      ])
-    )
+        or (
+          local-name($geom) = 'MultiSurface'
+          and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[
+            not(self::gml:LinearRing)
+            and not(
+              self::gml:Ring
+              and not(gml:curveMember/*[
+                not(self::gml:LineString)
+                and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+              ])
+            )
+          ])
+        )
 
 - text: |-
     Forsyningsarten må ikke være en af de prædefinerede værdier fra kodelisten Forsyningsart.
