@@ -37,15 +37,45 @@
   - name: geometriVertikaleKoordinaterRestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
   - name: udvendigBreddeBetingelse
-    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigBredde))"
+    sub_assertions: &id002
+    - name: udvendigBreddeSkalAngives
+      message: Den udvendige bredde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær.
+      expression: 'not($afterCutoff and not($isCirkulaer))
+
+        or
+
+        (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = ''true'') and normalize-space(ler:udvendigBredde) != '''')'
+    - name: udvendigBreddeMåIkkeAngives
+      message: Den udvendige bredde må ikke være angivet hvis tværsnitsformen er cirkulær.
+      expression: not($isCirkulaer) or not(ler:udvendigBredde)
   - name: udvendigBreddeMåleenhedsrestriktion
     expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
   - name: udvendigBreddeVoidrestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigBredde/@xsi:nil = 'true')"
   - name: udvendigDiameterBetingelse
-    expression: "(\n  not($afterCutoff and $isCirkulaer)\n  or\n  (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')\n)\nand\n($isCirkulaer or not(ler:udvendigDiameter))"
+    sub_assertions: &id003
+    - name: udvendigDiameterSkalAngives
+      message: Den udvendige diameter skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen er cirkulær.
+      expression: 'not($afterCutoff and $isCirkulaer)
+
+        or
+
+        (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = ''true'') and normalize-space(ler:udvendigDiameter) != '''')'
+    - name: udvendigDiameterMåIkkeAngives
+      message: Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær.
+      expression: $isCirkulaer or not(ler:udvendigDiameter)
   - name: udvendigHøjdeBetingelse
-    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigHoejde))"
+    sub_assertions: &id004
+    - name: udvendigHøjdeSkalAngives
+      message: Den udvendige højde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær.
+      expression: 'not($afterCutoff and not($isCirkulaer))
+
+        or
+
+        (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = ''true'') and normalize-space(ler:udvendigHoejde) != '''')'
+    - name: udvendigHøjdeMåIkkeAngives
+      message: Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær.
+      expression: not($isCirkulaer) or not(ler:udvendigHoejde)
   - name: udvendigHøjdeMåleenhedsrestriktion
     expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
   - name: udvendigHøjdeVoidrestriktion
@@ -168,10 +198,15 @@
     - name: fladePlanInterpolation
       message: Geometrien skal anvende 2-dimensionel interpolation ("planar interpolation") hvis dens type er GM_Surface eller GM_MultiSurface.
       expression: "not($geom)\nor not(local-name($geom) = ('Surface', 'MultiSurface'))\nor (\n  local-name($geom) = 'Surface'\n  and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])\n)\nor (\n  local-name($geom) = 'MultiSurface'\n  and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])\n)"
+    - name: polygonGrænseLineærInterpolation
+      message: Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface.
+      expression: "not($geom)\nor not(local-name($geom) = 'Polygon')\nor not($geom/(gml:exterior | gml:interior)/*[\n  not(self::gml:LinearRing)\n  and not(\n    self::gml:Ring\n    and not(gml:curveMember/*[\n      not(self::gml:LineString)\n      and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n    ])\n  )\n])"
     - name: fladeGrænseLineærInterpolation
       message: Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface.
-      expression: "not($geom)\nor not(local-name($geom) = ('Polygon', 'Surface', 'MultiSurface'))\nor (\n  local-name($geom) = 'Polygon'\n  and not($geom/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'Surface'\n  and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'MultiSurface'\n  and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[\n   \
-        \ not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)"
+      expression: "not($geom)\nor not(local-name($geom) = 'Surface')\nor not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[\n  not(self::gml:LinearRing)\n  and not(\n    self::gml:Ring\n    and not(gml:curveMember/*[\n      not(self::gml:LineString)\n      and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n    ])\n  )\n])"
+    - name: multifladeGrænseLineærInterpolation
+      message: Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface.
+      expression: "not($geom)\nor not(local-name($geom) = 'MultiSurface')\nor not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[\n  not(self::gml:LinearRing)\n  and not(\n    self::gml:Ring\n    and not(gml:curveMember/*[\n      not(self::gml:LineString)\n      and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n    ])\n  )\n])"
   - name: stiRestriktion
     expression: 'not(starts-with(ler:sti, ''/''))
 
@@ -302,15 +337,15 @@
     expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
   assertions:
   - name: udvendigBreddeBetingelse
-    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigBredde))"
+    sub_assertions: *id002
   - name: udvendigBreddeMåleenhedsrestriktion
     expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
   - name: udvendigBreddeVoidrestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigBredde/@xsi:nil = 'true')"
   - name: udvendigDiameterBetingelse
-    expression: "(\n  not($afterCutoff and $isCirkulaer)\n  or\n  (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')\n)\nand\n($isCirkulaer or not(ler:udvendigDiameter))"
+    sub_assertions: *id003
   - name: udvendigHøjdeBetingelse
-    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigHoejde))"
+    sub_assertions: *id004
   - name: udvendigHøjdeMåleenhedsrestriktion
     expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
   - name: udvendigHøjdeVoidrestriktion

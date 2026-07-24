@@ -60,9 +60,13 @@
     expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
-    expression: '(number(ler:spaendingsniveau) >= 10 and normalize-space(ler:fareklasse) = ''meget farlig'')
-
-      or (not(number(ler:spaendingsniveau) >= 10) and normalize-space(ler:fareklasse) != ''meget farlig'')'
+    sub_assertions:
+    - name: fareklasseSkalVæreMegetFarlig
+      message: Fareklassen skal være meget farlig hvis elledningen har et spændingsniveau på 10 kV eller mere.
+      expression: not(number(ler:spaendingsniveau) >= 10) or normalize-space(ler:fareklasse) = 'meget farlig'
+    - name: fareklasseMåIkkeVæreMegetFarlig
+      message: Fareklassen må ikke være meget farlig hvis elledningen har et spændingsniveau på mindre end 10 kV.
+      expression: number(ler:spaendingsniveau) >= 10 or normalize-space(ler:fareklasse) != 'meget farlig'
   - name: spændingsniveauMåleenhedsrestriktion
     expression: not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'
   - name: udvendigDiameterBetingelse
@@ -79,9 +83,13 @@
     expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
-    expression: '(number(ler:tryk) >= 19 and normalize-space(ler:fareklasse) = ''meget farlig'')
-
-      or (not(number(ler:tryk) >= 19) and normalize-space(ler:fareklasse) != ''meget farlig'')'
+    sub_assertions:
+    - name: fareklasseSkalVæreMegetFarlig
+      message: Fareklassen skal være meget farlig hvis gasledningen har et tryk på 19 bar eller mere.
+      expression: not(number(ler:tryk) >= 19) or normalize-space(ler:fareklasse) = 'meget farlig'
+    - name: fareklasseMåIkkeVæreMegetFarlig
+      message: Fareklassen må ikke være meget farlig hvis gasledningen har et tryk på mindre end 19 bar.
+      expression: number(ler:tryk) >= 19 or normalize-space(ler:fareklasse) != 'meget farlig'
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Graveforespoergselssvar
@@ -149,10 +157,15 @@
     - name: fladePlanInterpolation
       message: Geometrien skal anvende 2-dimensionel interpolation ("planar interpolation") hvis dens type er GM_Surface eller GM_MultiSurface.
       expression: "not($geom)\nor not(local-name($geom) = ('Surface', 'MultiSurface'))\nor (\n  local-name($geom) = 'Surface'\n  and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])\n)\nor (\n  local-name($geom) = 'MultiSurface'\n  and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])\n)"
+    - name: polygonGrænseLineærInterpolation
+      message: Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface.
+      expression: "not($geom)\nor not(local-name($geom) = 'Polygon')\nor not($geom/(gml:exterior | gml:interior)/*[\n  not(self::gml:LinearRing)\n  and not(\n    self::gml:Ring\n    and not(gml:curveMember/*[\n      not(self::gml:LineString)\n      and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n    ])\n  )\n])"
     - name: fladeGrænseLineærInterpolation
       message: Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface.
-      expression: "not($geom)\nor not(local-name($geom) = ('Polygon', 'Surface', 'MultiSurface'))\nor (\n  local-name($geom) = 'Polygon'\n  and not($geom/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'Surface'\n  and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'MultiSurface'\n  and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[\n   \
-        \ not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)"
+      expression: "not($geom)\nor not(local-name($geom) = 'Surface')\nor not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[\n  not(self::gml:LinearRing)\n  and not(\n    self::gml:Ring\n    and not(gml:curveMember/*[\n      not(self::gml:LineString)\n      and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n    ])\n  )\n])"
+    - name: multifladeGrænseLineærInterpolation
+      message: Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface.
+      expression: "not($geom)\nor not(local-name($geom) = 'MultiSurface')\nor not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[\n  not(self::gml:LinearRing)\n  and not(\n    self::gml:Ring\n    and not(gml:curveMember/*[\n      not(self::gml:LineString)\n      and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n    ])\n  )\n])"
   - name: stiRestriktion
     expression: 'not(starts-with(ler:sti, ''/''))
 
@@ -287,7 +300,17 @@
     expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
-    expression: "(\n  (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) = 'meget farlig'\n)\nor\n(\n  not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) != 'meget farlig'\n)"
+    sub_assertions:
+    - name: fareklasseSkalVæreMegetFarlig
+      message: Fareklassen skal være meget farlig hvis den termiske ledning har en temperatur på mere end 130 °C eller et tryk på 10 bar eller mere.
+      expression: 'not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
+
+        or normalize-space(ler:fareklasse) = ''meget farlig'''
+    - name: fareklasseMåIkkeVæreMegetFarlig
+      message: Fareklassen må ikke være meget farlig hvis den termiske ledning har en temperatur på 130 °C eller mindre og et tryk på mindre end 10 bar.
+      expression: '(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
+
+        or normalize-space(ler:fareklasse) != ''meget farlig'''
   - name: temperaturMåleenhedsrestriktion
     expression: not(ler:temperatur) or ler:temperatur/@uom = 'Cel'
   - name: trykMåleenhedsrestriktion

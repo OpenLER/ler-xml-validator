@@ -166,14 +166,16 @@
     * etableringstidspunktet er efter skæringsdatoen;
     * tværsnitsformen er ikke cirkulær.
     Den udvendige bredde må ikke være angivet hvis tværsnitsformen er cirkulær.
-  expression: |-
-    (
-      not($afterCutoff and not($isCirkulaer))
-      or
-      (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')
-    )
-    and
-    (not($isCirkulaer) or not(ler:udvendigBredde))
+  sub_assertions:
+    - name: udvendigBreddeSkalAngives
+      message: "Den udvendige bredde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær."
+      expression: |-
+        not($afterCutoff and not($isCirkulaer))
+        or
+        (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')
+    - name: udvendigBreddeMåIkkeAngives
+      message: "Den udvendige bredde må ikke være angivet hvis tværsnitsformen er cirkulær."
+      expression: not($isCirkulaer) or not(ler:udvendigBredde)
 
 - text: Måleenheden for den udvendige bredde skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
   expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
@@ -196,28 +198,32 @@
     * etableringstidspunktet er efter skæringsdatoen;
     * tværsnitsformen er cirkulær.
     Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær.
-  expression: |-
-    (
-      not($afterCutoff and $isCirkulaer)
-      or
-      (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')
-    )
-    and
-    ($isCirkulaer or not(ler:udvendigDiameter))
+  sub_assertions:
+    - name: udvendigDiameterSkalAngives
+      message: "Den udvendige diameter skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen er cirkulær."
+      expression: |-
+        not($afterCutoff and $isCirkulaer)
+        or
+        (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')
+    - name: udvendigDiameterMåIkkeAngives
+      message: "Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær."
+      expression: $isCirkulaer or not(ler:udvendigDiameter)
 
 - text: |-
     Den udvendige højde skal være angivet hvis alle følgende betingelser er sande:
     * etableringstidspunktet er efter skæringsdatoen;
     * tværsnitsformen er ikke cirkulær.
     Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær.
-  expression: |-
-    (
-      not($afterCutoff and not($isCirkulaer))
-      or
-      (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')
-    )
-    and
-    (not($isCirkulaer) or not(ler:udvendigHoejde))
+  sub_assertions:
+    - name: udvendigHøjdeSkalAngives
+      message: "Den udvendige højde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær."
+      expression: |-
+        not($afterCutoff and not($isCirkulaer))
+        or
+        (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')
+    - name: udvendigHøjdeMåIkkeAngives
+      message: "Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær."
+      expression: not($isCirkulaer) or not(ler:udvendigHoejde)
 
 - text: Måleenheden for den udvendige højde skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
   expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
@@ -293,16 +299,24 @@
 - text: |-
     Fareklassen skal være meget farlig hvis elledningen har et spændingsniveau på 10 kV eller mere.
     Fareklassen må ikke være meget farlig hvis elledningen har et spændingsniveau på mindre end 10 kV.
-  expression: |-
-    (number(ler:spaendingsniveau) >= 10 and normalize-space(ler:fareklasse) = 'meget farlig')
-    or (not(number(ler:spaendingsniveau) >= 10) and normalize-space(ler:fareklasse) != 'meget farlig')
+  sub_assertions:
+    - name: fareklasseSkalVæreMegetFarlig
+      message: "Fareklassen skal være meget farlig hvis elledningen har et spændingsniveau på 10 kV eller mere."
+      expression: not(number(ler:spaendingsniveau) >= 10) or normalize-space(ler:fareklasse) = 'meget farlig'
+    - name: fareklasseMåIkkeVæreMegetFarlig
+      message: "Fareklassen må ikke være meget farlig hvis elledningen har et spændingsniveau på mindre end 10 kV."
+      expression: number(ler:spaendingsniveau) >= 10 or normalize-space(ler:fareklasse) != 'meget farlig'
 
 - text: |-
     Fareklassen skal være meget farlig hvis gasledningen har et tryk på 19 bar eller mere.
     Fareklassen må ikke være meget farlig hvis gasledningen har et tryk på mindre end 19 bar.
-  expression: |-
-    (number(ler:tryk) >= 19 and normalize-space(ler:fareklasse) = 'meget farlig')
-    or (not(number(ler:tryk) >= 19) and normalize-space(ler:fareklasse) != 'meget farlig')
+  sub_assertions:
+    - name: fareklasseSkalVæreMegetFarlig
+      message: "Fareklassen skal være meget farlig hvis gasledningen har et tryk på 19 bar eller mere."
+      expression: not(number(ler:tryk) >= 19) or normalize-space(ler:fareklasse) = 'meget farlig'
+    - name: fareklasseMåIkkeVæreMegetFarlig
+      message: "Fareklassen må ikke være meget farlig hvis gasledningen har et tryk på mindre end 19 bar."
+      expression: number(ler:tryk) >= 19 or normalize-space(ler:fareklasse) != 'meget farlig'
 
 - text: |-
     Fareklassen skal være meget farlig hvis en eller flere af følgende betingelser er sande:
@@ -311,16 +325,17 @@
     Fareklassen må ikke være meget farlig hvis alle følgende betingelser er sande:
     * den termiske ledning har en temperatur på 130 °C eller mindre
     * den termiske ledning har et tryk på mindre end 10 bar
-  expression: |-
-    (
-      (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
-      and normalize-space(ler:fareklasse) = 'meget farlig'
-    )
-    or
-    (
-      not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
-      and normalize-space(ler:fareklasse) != 'meget farlig'
-    )
+  sub_assertions:
+    - name: fareklasseSkalVæreMegetFarlig
+      message: "Fareklassen skal være meget farlig hvis den termiske ledning har en temperatur på mere end 130 °C eller et tryk på 10 bar eller mere."
+      expression: |-
+        not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
+        or normalize-space(ler:fareklasse) = 'meget farlig'
+    - name: fareklasseMåIkkeVæreMegetFarlig
+      message: "Fareklassen må ikke være meget farlig hvis den termiske ledning har en temperatur på 130 °C eller mindre og et tryk på mindre end 10 bar."
+      expression: |-
+        (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
+        or normalize-space(ler:fareklasse) != 'meget farlig'
 
 - text: Måleenheden for trykket skal være bar. Bar skal angives med symbolet bar [UCUM].
   expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
