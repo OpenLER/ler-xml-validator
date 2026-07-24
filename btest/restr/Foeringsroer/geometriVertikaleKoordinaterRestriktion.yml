@@ -1,4 +1,4 @@
-source: $FT/Føringsrør.xml
+source: $FT/Foeringsroer.xml
 assertions: []
 branches:
   - name: change forsyningsart to gas
