@@ -50,6 +50,11 @@
     or (not(ler:geometri) and not(ler:noejagtighedsklasseVertikal))
 
 - text: |-
+    Nøjagtighedsklassen for den vertikale placering skal være angivet.
+    Note: Denne restriktion er nødvendig, da attribut "nøjagtighedsklasseVertikal" er defineret på LedningEllerLedningstrace med multiplicitet 0..1.
+  expression: boolean(ler:noejagtighedsklasseVertikal)
+
+- text: |-
     Nøjagtighedsklassen for den vertikale placering må ikke være void hvis alle følgende betingelser er sande:
     * etableringstidspunktet er efter skæringsdatoen;
     * ejerskabsforholdet er ejet af udleverende ledningsejer.
