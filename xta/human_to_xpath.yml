@@ -292,3 +292,23 @@
 
 - text: Måleenheden for trykket skal være bar. Bar skal angives med symbolet bar [UCUM].
   expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
+
+- text: Brøndformen må kun være angivet hvis typen er brønd.
+  expression: not(ler:broendform) or normalize-space(ler:type) = 'brønd'
+
+- text: Måleenheden for bunddiameterbredden skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
+  expression: not(ler:bunddiameterbredde) or ler:bunddiameterbredde/@uom = 'mm'
+
+- text: Måleenheden for bundlængden skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
+  expression: not(ler:bundlaengde) or ler:bundlaengde/@uom = 'mm'
+
+- text: |-
+    Bundlængden må kun være angivet hvis alle følgende betingelser er sande:
+    * typen er brønd
+    * brøndformkoden er kvadratisk eller rektangulær
+  expression: |-
+    not(ler:bundlaengde)
+    or (
+      normalize-space(ler:type) = 'brønd'
+      and (normalize-space(ler:broendform) = 'kvadratisk' or normalize-space(ler:broendform) = 'rektangulær')
+    )

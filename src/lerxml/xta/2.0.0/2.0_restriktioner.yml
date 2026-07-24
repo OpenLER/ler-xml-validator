@@ -1,3 +1,13 @@
+- xsdtype: ler:Afloebskomponent
+  assertions:
+  - name: brøndformTilladelse
+    expression: not(ler:broendform) or normalize-space(ler:type) = 'brønd'
+  - name: bunddiameterbreddeMåleenhedsrestriktion
+    expression: not(ler:bunddiameterbredde) or ler:bunddiameterbredde/@uom = 'mm'
+  - name: bundlængdeMåleenhedsrestriktion
+    expression: not(ler:bundlaengde) or ler:bundlaengde/@uom = 'mm'
+  - name: bundlængdeTilladelse
+    expression: "not(ler:bundlaengde)\nor (\n  normalize-space(ler:type) = 'brønd'\n  and (normalize-space(ler:broendform) = 'kvadratisk' or normalize-space(ler:broendform) = 'rektangulær')\n)"
 - xsdtype: ler:Afloebsledning
   assertions:
   - name: fareklasseRestriktion
