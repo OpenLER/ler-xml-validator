@@ -536,3 +536,54 @@
 
 - text: Tapstedstypen må kun være angivet hvis typen er tapsted.
   expression: not(ler:tapstedstype) or normalize-space(ler:type) = 'tapsted'
+
+- text: Stien skal være en relativ sti.
+  expression: |-
+    not(starts-with(ler:sti, '/'))
+    and not(matches(ler:sti, '^[a-zA-Z][a-zA-Z0-9+.-]*:'))
+
+- text: |-
+    Formatværdien skal være en af følgende: CSV, DGN, DOC, DOCX, DWF, DWG, DXF, IFC-SPF, IFC-XML, JPEG, PDF, SAT, SHP, SKP, TAB, TIFF, XLS, XLSX.
+    Formattypen skal være text/csv hvis formatværdien er CSV.
+    Formattypen skal være application/octet-stream hvis formatværdien er DGN.
+    Formattypen skal være application/msword hvis formatværdien er DOC.
+    Formattypen skal være application/vnd.openxmlformats-officedocument.wordprocessingml.document hvis formatværdien er DOCX.
+    Formattypen skal være model/vnd.dwf hvis formatværdien er DWF.
+    Formattypen skal være image/vnd.dwg hvis formatværdien er DWG.
+    Formattypen skal være image/vnd.dxf hvis formatværdien er DXF.
+    Formattypen skal være application/x-step hvis formatværdien er IFC-SPF.
+    Formattypen skal være application/xml hvis formatværdien er IFC-XML.
+    Formattypen skal være image/jpeg hvis formatværdien er JPEG.
+    Formattypen skal være application/pdf hvis formatværdien er PDF.
+    Formattypen skal være application/octet-stream hvis formatværdien er SAT.
+    Formattypen skal være application/x-shapefile hvis formatværdien er SHP.
+    Formattypen skal være application/octet-stream hvis formatværdien er SKP.
+    Formattypen skal være application/x-tab hvis formatværdien er TAB.
+    Formattypen skal være image/tiff hvis formatværdien er TIFF.
+    Formattypen skal være application/vnd.ms-excel hvis formatværdien er XLS.
+    Formattypen skal være application/vnd.openxmlformats-officedocument.spreadsheetml.sheet hvis formatværdien er XLSX.
+    Note 1: Formatværdien er Informationsressource.format.value, se også MediaType.
+    Note 2: Formattypen er Informationsressource.format.type, se også MediaType.
+    Note 3: Følgende filformater er optaget på IANAs liste over mediatyper [IANA]: CSV, DOC, DOCX, DWF, DWG, DXF, JPEG, PDF, TIFF, XLS, XLSX.
+    Note 4: Følgende filformater er optaget i INSPIREs register over mediatyper [INSPIRE]: SHP, TAB.
+    Note 5: Følgende filformater er specificeret i [buildingSMART]: IFC-SPF, IFC-XML.
+    Note 6: Ovenstående følger regler beskrevet i [RFC 2046] og [RFC 4288].
+  expression: |-
+    (normalize-space(ler:format) = 'CSV' and ler:format/@type = 'text/csv')
+    or (normalize-space(ler:format) = 'DGN' and ler:format/@type = 'application/octet-stream')
+    or (normalize-space(ler:format) = 'DOC' and ler:format/@type = 'application/msword')
+    or (normalize-space(ler:format) = 'DOCX' and ler:format/@type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    or (normalize-space(ler:format) = 'DWF' and ler:format/@type = 'model/vnd.dwf')
+    or (normalize-space(ler:format) = 'DWG' and ler:format/@type = 'image/vnd.dwg')
+    or (normalize-space(ler:format) = 'DXF' and ler:format/@type = 'image/vnd.dxf')
+    or (normalize-space(ler:format) = 'IFC-SPF' and ler:format/@type = 'application/x-step')
+    or (normalize-space(ler:format) = 'IFC-XML' and ler:format/@type = 'application/xml')
+    or (normalize-space(ler:format) = 'JPEG' and ler:format/@type = 'image/jpeg')
+    or (normalize-space(ler:format) = 'PDF' and ler:format/@type = 'application/pdf')
+    or (normalize-space(ler:format) = 'SAT' and ler:format/@type = 'application/octet-stream')
+    or (normalize-space(ler:format) = 'SHP' and ler:format/@type = 'application/x-shapefile')
+    or (normalize-space(ler:format) = 'SKP' and ler:format/@type = 'application/octet-stream')
+    or (normalize-space(ler:format) = 'TAB' and ler:format/@type = 'application/x-tab')
+    or (normalize-space(ler:format) = 'TIFF' and ler:format/@type = 'image/tiff')
+    or (normalize-space(ler:format) = 'XLS' and ler:format/@type = 'application/vnd.ms-excel')
+    or (normalize-space(ler:format) = 'XLSX' and ler:format/@type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

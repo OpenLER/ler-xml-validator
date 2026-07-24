@@ -100,9 +100,49 @@
     expression: normalize-space(ler:type) != 'ledningsoplysninger udleveres ikke' or ler:typeSupplerendeInfo
 - xsdtype: ler:Informationsressource
   assertions:
+  - name: formatRestriktion
+    expression: '(normalize-space(ler:format) = ''CSV'' and ler:format/@type = ''text/csv'')
+
+      or (normalize-space(ler:format) = ''DGN'' and ler:format/@type = ''application/octet-stream'')
+
+      or (normalize-space(ler:format) = ''DOC'' and ler:format/@type = ''application/msword'')
+
+      or (normalize-space(ler:format) = ''DOCX'' and ler:format/@type = ''application/vnd.openxmlformats-officedocument.wordprocessingml.document'')
+
+      or (normalize-space(ler:format) = ''DWF'' and ler:format/@type = ''model/vnd.dwf'')
+
+      or (normalize-space(ler:format) = ''DWG'' and ler:format/@type = ''image/vnd.dwg'')
+
+      or (normalize-space(ler:format) = ''DXF'' and ler:format/@type = ''image/vnd.dxf'')
+
+      or (normalize-space(ler:format) = ''IFC-SPF'' and ler:format/@type = ''application/x-step'')
+
+      or (normalize-space(ler:format) = ''IFC-XML'' and ler:format/@type = ''application/xml'')
+
+      or (normalize-space(ler:format) = ''JPEG'' and ler:format/@type = ''image/jpeg'')
+
+      or (normalize-space(ler:format) = ''PDF'' and ler:format/@type = ''application/pdf'')
+
+      or (normalize-space(ler:format) = ''SAT'' and ler:format/@type = ''application/octet-stream'')
+
+      or (normalize-space(ler:format) = ''SHP'' and ler:format/@type = ''application/x-shapefile'')
+
+      or (normalize-space(ler:format) = ''SKP'' and ler:format/@type = ''application/octet-stream'')
+
+      or (normalize-space(ler:format) = ''TAB'' and ler:format/@type = ''application/x-tab'')
+
+      or (normalize-space(ler:format) = ''TIFF'' and ler:format/@type = ''image/tiff'')
+
+      or (normalize-space(ler:format) = ''XLS'' and ler:format/@type = ''application/vnd.ms-excel'')
+
+      or (normalize-space(ler:format) = ''XLSX'' and ler:format/@type = ''application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'')'
   - name: geometriDatatyperestriktion
     expression: "not($geom)\nor local-name($geom) = ('Point', 'MultiPoint')\nor local-name($geom) = 'LineString'\nor (\n  local-name($geom) = 'Curve'\n  and not($geom/gml:segments/*[not(local-name() = 'LineStringSegment')])\n)\nor (\n  local-name($geom) = 'MultiCurve'\n  and not($geom//gml:curveMember/*[\n    not(self::gml:LineString)\n    and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n  ])\n)\nor (\n  local-name($geom) = 'Polygon'\n  and not($geom/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'Surface'\n  and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])\n  and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n\
       \    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'MultiSurface'\n  and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])\n  and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)"
+  - name: stiRestriktion
+    expression: 'not(starts-with(ler:sti, ''/''))
+
+      and not(matches(ler:sti, ''^[a-zA-Z][a-zA-Z0-9+.-]*:''))'
 - xsdtype: ler:Ledning
   variables:
   - name: ownRef
