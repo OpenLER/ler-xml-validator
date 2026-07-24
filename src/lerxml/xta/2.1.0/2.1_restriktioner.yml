@@ -28,6 +28,8 @@
   - name: verticalUnknown
     expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
+  - name: forsyningsartRestriktion
+    expression: "not(\n  normalize-space(ler:forsyningsart)\n  = ('afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand')\n)"
   - name: geometriVertikaleKoordinaterRestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
   - name: udvendigBreddeBetingelse

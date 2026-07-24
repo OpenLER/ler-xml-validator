@@ -32,6 +32,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: forsyningsartRestriktion
+    expression: "not(\n  normalize-space(ler:forsyningsart)\n  = ('afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand')\n)"
   - name: geometriVertikaleKoordinaterRestriktion
     expression: not($afterCutoff) or not($verticalUnknown)
   - name: udvendigBreddeMåleenhedsrestriktion
