@@ -238,6 +238,22 @@
     expression: "not(\n  $afterCutoff\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
   - name: vejledendeDybdeVoidrestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor not(ler:vejledendeDybde/@xsi:nil = 'true')"
+- xsdtype: ler:LinearAnnotation
+  assertions:
+  - name: geometryDataTypeConstraint
+    expression: 'not(ann:geometry)
+
+      or ann:geometry/gml:LineString
+
+      or (ann:geometry/gml:Curve and not(ann:geometry/gml:Curve/gml:segments/*[not(local-name() = ''LineStringSegment'')]))'
+- xsdtype: ler:LinearDimension
+  assertions:
+  - name: geometryDataTypeConstraint
+    expression: 'not(dim:dimensionLine)
+
+      or dim:dimensionLine/gml:LineString
+
+      or (dim:dimensionLine/gml:Curve and not(dim:dimensionLine/gml:Curve/gml:segments/*[not(local-name() = ''LineStringSegment'')]))'
 - xsdtype: ler:Olieledning
   variables:
   - name: zValues

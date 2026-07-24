@@ -593,3 +593,23 @@
 
 - text: Telefonnummeret skal være angivet hvis ikke mailadressen er angivet.
   expression: ler:mailadresse or ler:telefonnummer
+
+- text: |-
+    The geometry shall use linear interpolation.
+    Note: In a GML encoding, this means that the geometry, which is a curve, must have a geometry type that is one of the following [GML SF]:
+    * gml:LineString
+    * gml:Curve consisting of segments having type gml:LineStringSegment
+  expression: |-
+    not(ann:geometry)
+    or ann:geometry/gml:LineString
+    or (ann:geometry/gml:Curve and not(ann:geometry/gml:Curve/gml:segments/*[not(local-name() = 'LineStringSegment')]))
+
+- text: |-
+    The dimension line shall use linear interpolation.
+    Note: In a GML encoding, this means that these geometries, which are curves, must have a geometry type that is one of the following [GML SF]:
+    * gml:LineString
+    * gml:Curve consisting of segments having type gml:LineStringSegment
+  expression: |-
+    not(dim:dimensionLine)
+    or dim:dimensionLine/gml:LineString
+    or (dim:dimensionLine/gml:Curve and not(dim:dimensionLine/gml:Curve/gml:segments/*[not(local-name() = 'LineStringSegment')]))

@@ -213,6 +213,22 @@
     expression: "not(\n  ler:geometri//gml:curveMember/*[\n    not(self::gml:LineString)\n    and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n  ]\n)"
   - name: nøjagtighedsklasseVoidrestriktion
     expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
+- xsdtype: ler:LinearAnnotation
+  assertions:
+  - name: geometryDataTypeConstraint
+    expression: 'not(ann:geometry)
+
+      or ann:geometry/gml:LineString
+
+      or (ann:geometry/gml:Curve and not(ann:geometry/gml:Curve/gml:segments/*[not(local-name() = ''LineStringSegment'')]))'
+- xsdtype: ler:LinearDimension
+  assertions:
+  - name: geometryDataTypeConstraint
+    expression: 'not(dim:dimensionLine)
+
+      or dim:dimensionLine/gml:LineString
+
+      or (dim:dimensionLine/gml:Curve and not(dim:dimensionLine/gml:Curve/gml:segments/*[not(local-name() = ''LineStringSegment'')]))'
 - xsdtype: ler:Olieledning
   variables:
   - name: zValues

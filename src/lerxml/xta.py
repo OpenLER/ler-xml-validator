@@ -44,6 +44,8 @@ NAMESPACES = {
     "gml": "http://www.opengis.net/gml/3.2",
     "xsi": "http://www.w3.org/2001/XMLSchema-instance",
     "xlink": "http://www.w3.org/1999/xlink",
+    "ann": "http://data.gov.dk/schemas/annotations/2/gml",
+    "dim": "http://data.gov.dk/schemas/dimensions/2/gml",
 }
 
 _PARSER = XPath2Parser(namespaces=NAMESPACES)
