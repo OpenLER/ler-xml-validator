@@ -417,3 +417,6 @@
       normalize-space(ler:forsyningsart)
       = ('afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand')
     )
+
+- text: Måleenheden for temperaturen skal være grader celsius. Grader celsius skal angives med symbolet Cel [UCUM].
+  expression: not(ler:temperatur) or ler:temperatur/@uom = 'Cel'

@@ -185,6 +185,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: "(\n  (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) = 'meget farlig'\n)\nor\n(\n  not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) != 'meget farlig'\n)"
+  - name: temperaturMåleenhedsrestriktion
+    expression: not(ler:temperatur) or ler:temperatur/@uom = 'Cel'
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Vandledning

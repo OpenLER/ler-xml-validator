@@ -242,6 +242,8 @@
   assertions:
   - name: geometriVertikaleKoordinaterRestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
+  - name: temperaturMåleenhedsrestriktion
+    expression: not(ler:temperatur) or ler:temperatur/@uom = 'Cel'
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Vandledning
