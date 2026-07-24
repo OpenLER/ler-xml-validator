@@ -4,13 +4,19 @@ Design: traversér XML-dokumentet; for hvert element, slå op (i en
 forudberegnet cache) hvilke variabler og assertions der gælder for netop
 dét elements type-hierarki, og evaluér dem.
 
-Cachen bygges én gang, ved import: for hvert konkret element i skemaet,
-gå opad i dets type-kæde (element.type.base_type.base_type...) og saml
-variabler/assertions fra alle xta/*.yml-filer, hvis xsdtype matcher et
-sted i kæden. Variabler samles fra mest generel til mest specifik type,
-så en specifik types variabel-udtryk kan referere til variabler defineret
-længere oppe i kæden (ligesom <let> i schematron.py's .sch-filer, via
-<extends>).
+Cachen bygges pr. version (lazily, ved første brug): for hvert konkret
+element i den version's skema, gå opad i dets type-kæde
+(element.type.base_type.base_type...) og saml variabler/assertions fra
+src/lerxml/xta/{version}/*.yml, hvis xsdtype matcher et sted i kæden.
+Variabler samles fra mest generel til mest specifik type, så en specifik
+types variabel-udtryk kan referere til variabler defineret længere oppe i
+kæden (ligesom <let> i schematron.py's .sch-filer, via <extends>).
+
+Regelfilerne pr. version bygges af build_xta.py (se repo-roden) ud fra
+featurekatalog/constraints/{version}/*.yml (den officielle, natursprogede
+kilde) plus xta/human_to_xpath.yml (den håndholdte tekst->XPath-ordbog).
+Dækningen er ikke nødvendigvis 100% for ældre versioner — se
+`python build_xta.py` for status.
 
 Samme interface som xsd.py/schematron.py: validate(doc) / validate_file(path)
 / validate_string(xml), alle giver ValidationError-objekter.
@@ -28,16 +34,9 @@ from lxml import etree
 from lxml.etree import _ElementTree
 
 from . import ValidationError
-from .xsd import schema as xsd_schema
+from .xsd import DEFAULT_VERSION, get_schema
 
 XTA_DIR = files("lerxml") / "xta"
-
-# The assertions in xta/*.yml are only transcribed against 2.2.0's schema so
-# far (see featurekatalog/constraints/{version}/*.yml for the untranslated
-# natural-language source for the other LER versions). Until the other
-# versions get their own rule set, validate() is a no-op for them rather than
-# incorrectly applying 2.2.0-specific rules to older documents.
-RULES_VERSION = "2.2.0"
 
 NAMESPACES = {
     "ler": "http://data.gov.dk/schemas/LER/2/gml",
@@ -63,11 +62,14 @@ def _check_unique_names(xsdtype: str, kind: str, items: list[dict]) -> None:
         seen.add(name)
 
 
-def _load_by_xsdtype() -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
-    """Indlæs variabler og assertions fra alle xta/*.yml, nøglet på xsdtype (uden præfiks)."""
+def _load_by_xsdtype(version: str) -> tuple[dict[str, list[dict]], dict[str, list[dict]]]:
+    """Indlæs variabler og assertions fra src/lerxml/xta/{version}/*.yml (bygget af
+    build_xta.py), nøglet på xsdtype (uden præfiks)."""
     variables_by_type: dict[str, list[dict]] = {}
     assertions_by_type: dict[str, list[dict]] = {}
-    for yml_path in sorted(p for p in XTA_DIR.iterdir() if p.name.endswith(".yml")):
+    version_dir = XTA_DIR / version
+    yml_paths = sorted(p for p in version_dir.iterdir() if p.name.endswith(".yml")) if version_dir.is_dir() else []
+    for yml_path in yml_paths:
         entries = yaml.safe_load(yml_path.read_text()) or []
         for entry in entries:
             xsdtype = entry["xsdtype"].split(":")[-1]
@@ -106,14 +108,20 @@ def _check_xsdtypes_exist(variables_by_type: dict, assertions_by_type: dict, kno
         )
 
 
-def _build_cache() -> dict[str, tuple[list[dict], list[dict]]]:
-    """For hvert konkret element i skemaet: (variabler mest-generel-først, assertions)."""
-    variables_by_type, assertions_by_type = _load_by_xsdtype()
+def _build_cache(version: str) -> dict[str, tuple[list[dict], list[dict]]]:
+    """For hvert konkret element i den givne versions skema: (variabler mest-generel-først, assertions)."""
+    variables_by_type, assertions_by_type = _load_by_xsdtype(version)
+    xsd_schema = get_schema(version)
 
     cache: dict[str, tuple[list[dict], list[dict]]] = {}
     known_types: set[str] = set()
 
-    for name, xsd_element in xsd_schema.elements.items():
+    # xsd_schema.elements only covers the schema's own target namespace (ler:);
+    # some feature types (LinearAnnotation, LinearDimension) live in imported
+    # namespaces (ann:, dim:), so we need the full cross-namespace element map.
+    # validate() looks elements up by local name only, so namespace is dropped here too.
+    for qname, xsd_element in xsd_schema.maps.elements.items():
+        name = qname.rpartition("}")[2]
         ancestry = _type_ancestry(xsd_element.type)  # mest specifik -> mest generel
         known_types.update(ancestry)
 
@@ -133,7 +141,9 @@ def _build_cache() -> dict[str, tuple[list[dict], list[dict]]]:
     return cache
 
 
-_CACHE = _build_cache()
+@lru_cache(maxsize=None)
+def get_cache(version: str) -> dict[str, tuple[list[dict], list[dict]]]:
+    return _build_cache(version)
 
 
 @lru_cache(maxsize=None)
@@ -147,9 +157,8 @@ def _evaluate(expr: str, node, root_node, variables: dict) -> object:
     return token.evaluate(ctx)
 
 
-def validate(doc: _ElementTree, version: str = RULES_VERSION) -> Iterator[ValidationError]:
-    if version != RULES_VERSION:
-        return
+def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
+    cache = get_cache(version)
 
     # Building elementpath's node-tree wrapper is O(document size); doing it once
     # per document (instead of once per expression evaluation, as a naive
@@ -159,7 +168,7 @@ def validate(doc: _ElementTree, version: str = RULES_VERSION) -> Iterator[Valida
 
     for elem in doc.iter(tag=etree.Element):
         local_name = etree.QName(elem).localname
-        entry = _CACHE.get(local_name)
+        entry = cache.get(local_name)
         if entry is None:
             continue
         variable_defs, assertions = entry
@@ -178,11 +187,11 @@ def validate(doc: _ElementTree, version: str = RULES_VERSION) -> Iterator[Valida
                 )
 
 
-def validate_file(path: str | Path, version: str = RULES_VERSION) -> Iterator[ValidationError]:
+def validate_file(path: str | Path, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
     doc = etree.parse(str(path))
     yield from validate(doc, version)
 
 
-def validate_string(xml: str, version: str = RULES_VERSION) -> Iterator[ValidationError]:
+def validate_string(xml: str, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     yield from validate(doc, version)
