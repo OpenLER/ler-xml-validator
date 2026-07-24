@@ -1,0 +1,256 @@
+# Ordbog: menneskelig restriktionstekst (fra featurekatalog/constraints/{version}/*.yml's
+# "expression"-felt) -> XPath-udtryk. build_xta.py slår hver restriktions tekst op her
+# for at generere xta/versions/{version}/restriktioner.yml automatisk.
+#
+# Nøglen er selve teksten (normaliseret whitespace ved opslag), ikke regel-navnet -
+# samme navn kan betyde noget forskelligt for forskellige xsdtyper (fx
+# udvendigDiameterBetingelse for Elledning vs. Rørledning), men samme tekst betyder
+# altid det samme, uanset hvilken feature type eller version den optræder i.
+
+- text: Måleenheden for den vejledende dybde i forhold til terræn ved etablering skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
+  expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
+
+- text: Driftsstatussen må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+  expression: not($afterCutoff) or not(ler:driftsstatus/@xsi:nil = 'true')
+
+- text: Fareklassen må ikke være void hvis  etableringstidspunktet er efter skæringsdatoen.
+  expression: not($afterCutoff) or not(ler:fareklasse/@xsi:nil = 'true')
+
+- text: |-
+    Geometrien skal være angivet hvis alle følgende betingelser er sande:
+    * ledningen er ikke indeholdt i et ledningstracé
+    * ledningen er ikke indeholdt i en anden ledning
+  expression: |-
+    exists(//ler:Ledningstrace/ler:indeholdtLedning[@xlink:href = $ownRef])
+    or exists(//ler:Ledning/ler:indeholdtLedning[@xlink:href = $ownRef])
+    or (ler:geometri and not(ler:geometri/@xsi:nil = 'true'))
+
+- text: |-
+    Geometrien skal anvende lineær interpolation.
+    Note: I en GML-indkodning betyder det, at geometrien, som er en kurve, skal have en geometritype der er en af følgende [GML SF]:
+    * gml:LineString
+    * gml:Curve med segmenter af typen gml:LineStringSegment
+  expression: |-
+    not(ler:geometri)
+    or ler:geometri/gml:LineString
+    or (ler:geometri/gml:Curve and not(ler:geometri/gml:Curve/gml:segments/*[not(local-name() = 'LineStringSegment')]))
+
+- text: |-
+    Nøjagtighedsklassen for den horisontale placering skal være angivet hvis geometrien er angivet.
+    Nøjagtighedsklassen for den horisontale placering må ikke være angivet hvis geometrien ikke er angivet.
+  expression: |-
+    (ler:geometri and ler:noejagtighedsklasse)
+    or (not(ler:geometri) and not(ler:noejagtighedsklasse))
+
+- text: |-
+    Nøjagtighedsklassen for den vertikale placering skal være angivet hvis geometrien er angivet.
+    Nøjagtighedsklassen for den vertikale placering må ikke være angivet hvis geometrien ikke er angivet.
+  expression: |-
+    (ler:geometri and ler:noejagtighedsklasseVertikal)
+    or (not(ler:geometri) and not(ler:noejagtighedsklasseVertikal))
+
+- text: |-
+    Nøjagtighedsklassen for den vertikale placering må ikke være void hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+    )
+    or not(ler:noejagtighedsklasseVertikal/@xsi:nil = 'true')
+
+- text: |-
+    Nøjagtighedsklassen for den horisontale placering må ikke være void hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+    )
+    or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
+
+- text: Måleenheden for den udvendige diameter skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
+  expression: not(ler:udvendigDiameter) or ler:udvendigDiameter/@uom = 'mm'
+
+- text: |-
+    Den udvendige diameter må ikke være void hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer;
+    * driftsstatussen er ikke under etablering.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+      and normalize-space(ler:driftsstatus) != 'under etablering'
+    )
+    or not(ler:udvendigDiameter/@xsi:nil = 'true')
+
+- text: Måleenheden for spændingsniveauet skal være kilovolt. Kilovolt skal angives med symbolet kV [UCUM].
+  expression: not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'
+
+- text: Den udvendige diameter skal være angivet hvis etableringstidspunktet er efter skæringsdatoen.
+  expression: |-
+    not($afterCutoff)
+    or
+    (
+      ler:udvendigDiameter
+      and not(ler:udvendigDiameter/@xsi:nil = 'true')
+      and normalize-space(ler:udvendigDiameter) != ''
+    )
+
+- text: |-
+    Den vejledende dybde skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * de vertikale koordinater i geometrien er ukendt-værdien på -99.
+  expression: |-
+    not($afterCutoff and $verticalUnknown)
+    or
+    (
+      ler:vejledendeDybde
+      and not(ler:vejledendeDybde/@xsi:nil = 'true')
+      and normalize-space(ler:vejledendeDybde) != ''
+    )
+
+- text: |-
+    Den vejledende dybde må ikke være void hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer;
+    * driftsstatussen er ikke under etablering;
+    * de vertikale koordinater i geometrien er ukendt-værdien på -99.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+      and normalize-space(ler:driftsstatus) != 'under etablering'
+      and $verticalUnknown
+    )
+    or
+    not(ler:vejledendeDybde/@xsi:nil = 'true')
+
+- text: |-
+    Den udvendige bredde skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * tværsnitsformen er ikke cirkulær.
+    Den udvendige bredde må ikke være angivet hvis tværsnitsformen er cirkulær.
+  expression: |-
+    (
+      not($afterCutoff and not($isCirkulaer))
+      or
+      (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')
+    )
+    and
+    (not($isCirkulaer) or not(ler:udvendigBredde))
+
+- text: Måleenheden for den udvendige bredde skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
+  expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
+
+- text: |-
+    Den udvendige bredde må ikke være void hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer;
+    * driftsstatussen er ikke under etablering.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+      and normalize-space(ler:driftsstatus) != 'under etablering'
+    )
+    or not(ler:udvendigBredde/@xsi:nil = 'true')
+
+- text: |-
+    Den udvendige diameter skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * tværsnitsformen er cirkulær.
+    Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær.
+  expression: |-
+    (
+      not($afterCutoff and $isCirkulaer)
+      or
+      (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')
+    )
+    and
+    ($isCirkulaer or not(ler:udvendigDiameter))
+
+- text: |-
+    Den udvendige højde skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * tværsnitsformen er ikke cirkulær.
+    Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær.
+  expression: |-
+    (
+      not($afterCutoff and not($isCirkulaer))
+      or
+      (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')
+    )
+    and
+    (not($isCirkulaer) or not(ler:udvendigHoejde))
+
+- text: Måleenheden for den udvendige højde skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
+  expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
+
+- text: |-
+    Den udvendige højde må ikke være void hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer;
+    * driftsstatussen er ikke under etablering.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+      and normalize-space(ler:driftsstatus) != 'under etablering'
+    )
+    or not(ler:udvendigHoejde/@xsi:nil = 'true')
+
+- text: |-
+    En vertikal koordinat i geometrien må ikke være ukendt-værdien på -99 hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer;
+    * driftsstatussen er ikke under etablering;
+    * den primære forsyningsart er ikke el;
+    * den primære forsyningsart er ikke telekommunikation.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+      and normalize-space(ler:driftsstatus) != 'under etablering'
+      and $primaryForsyningsart != 'el'
+      and $primaryForsyningsart != 'telekommunikation'
+    )
+    or not($verticalUnknown)
+
+- text: |-
+    Den vejledende dybde skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * de vertikale koordinater i geometrien er ukendt-værdien på -99;
+    * den primære forsyningsart er el eller telekommunikation.
+  expression: |-
+    not(
+      $afterCutoff
+      and $verticalUnknown
+      and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')
+    )
+    or
+    (
+      ler:vejledendeDybde
+      and not(ler:vejledendeDybde/@xsi:nil = 'true')
+      and normalize-space(ler:vejledendeDybde) != ''
+    )
+
+- text: |-
+    Den vejledende dybde må ikke være void hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen;
+    * ejerskabsforholdet er ejet af udleverende ledningsejer;
+    * driftsstatussen er ikke under etablering;
+    * de vertikale koordinater i geometrien er ukendt-værdien på -99;
+    * den primære forsyningsart er el eller telekommunikation.
+  expression: |-
+    not(
+      $afterCutoff
+      and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+      and normalize-space(ler:driftsstatus) != 'under etablering'
+      and $verticalUnknown
+      and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')
+    )
+    or not(ler:vejledendeDybde/@xsi:nil = 'true')

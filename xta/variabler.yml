@@ -1,0 +1,51 @@
+# Hjælpevariabler pr. xsdtype - ikke afledt af docx-tekst, derfor ikke en del af
+# oversaettelser.yml. Antaget uændrede på tværs af versioner (byggescriptet
+# advarer ikke hvis det er forkert - så må vi tilføje version-specifikke
+# varianter, hvis det viser sig at ikke holde).
+
+- xsdtype: ler:LedningEllerLedningstrace
+  variables:
+  - name: etab
+    expression: normalize-space(ler:etableringstidspunkt)
+  - name: isYear
+    expression: matches($etab, '^\d{4}$')
+  - name: isYearMonth
+    expression: matches($etab, '^\d{4}-\d{2}$')
+  - name: isDate
+    expression: matches($etab, '^\d{4}-\d{2}-\d{2}$')
+  - name: afterCutoff
+    expression: |-
+      if ($isDate) then xs:date($etab) gt xs:date('2023-07-01')
+      else if ($isYearMonth) then $etab gt '2023-07'
+      else if ($isYear) then number($etab) gt 2023
+      else false()
+
+- xsdtype: ler:Ledning
+  variables:
+  - name: ownRef
+    expression: concat('#', @gml:id)
+
+- xsdtype: ler:Elledning
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+
+- xsdtype: ler:Roerledning
+  variables:
+  - name: isCirkulaer
+    expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
+
+- xsdtype: ler:Foeringsroer
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  - name: primaryForsyningsart
+    expression: normalize-space(ler:forsyningsart[1])

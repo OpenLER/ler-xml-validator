@@ -1,0 +1,135 @@
+- xsdtype: ler:AndenLedning
+  assertions:
+  - name: udvendigBreddeBetingelse
+    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigBredde))"
+  - name: udvendigBreddeMåleenhedsrestriktion
+    expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
+  - name: udvendigBreddeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigBredde/@xsi:nil = 'true')"
+  - name: udvendigDiameterBetingelse
+    expression: "(\n  not($afterCutoff and $isCirkulaer)\n  or\n  (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')\n)\nand\n($isCirkulaer or not(ler:udvendigDiameter))"
+  - name: udvendigHøjdeBetingelse
+    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigHoejde))"
+  - name: udvendigHøjdeMåleenhedsrestriktion
+    expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
+  - name: udvendigHøjdeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigHoejde/@xsi:nil = 'true')"
+- xsdtype: ler:Elkomponent
+  assertions:
+  - name: spændingsniveauMåleenhedsrestriktion
+    expression: not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'
+- xsdtype: ler:Elledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  assertions:
+  - name: spændingsniveauMåleenhedsrestriktion
+    expression: not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'
+  - name: udvendigDiameterBetingelse
+    expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
+  - name: vejledendeDybdeBetingelse
+    expression: "not($afterCutoff and $verticalUnknown)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
+  - name: vejledendeDybdeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n)\nor\nnot(ler:vejledendeDybde/@xsi:nil = 'true')"
+- xsdtype: ler:Foeringsroer
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  - name: primaryForsyningsart
+    expression: normalize-space(ler:forsyningsart[1])
+  assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $primaryForsyningsart != 'el'\n  and $primaryForsyningsart != 'telekommunikation'\n)\nor not($verticalUnknown)"
+  - name: vejledendeDybdeBetingelse
+    expression: "not(\n  $afterCutoff\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
+  - name: vejledendeDybdeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor not(ler:vejledendeDybde/@xsi:nil = 'true')"
+- xsdtype: ler:Ledning
+  variables:
+  - name: ownRef
+    expression: concat('#', @gml:id)
+  assertions:
+  - name: driftsstatusVoidrestriktion
+    expression: not($afterCutoff) or not(ler:driftsstatus/@xsi:nil = 'true')
+  - name: fareklasseVoidrestriktion
+    expression: not($afterCutoff) or not(ler:fareklasse/@xsi:nil = 'true')
+  - name: geometriBetingelse
+    expression: 'exists(//ler:Ledningstrace/ler:indeholdtLedning[@xlink:href = $ownRef])
+
+      or exists(//ler:Ledning/ler:indeholdtLedning[@xlink:href = $ownRef])
+
+      or (ler:geometri and not(ler:geometri/@xsi:nil = ''true''))'
+  - name: geometriDatatyperestriktion
+    expression: 'not(ler:geometri)
+
+      or ler:geometri/gml:LineString
+
+      or (ler:geometri/gml:Curve and not(ler:geometri/gml:Curve/gml:segments/*[not(local-name() = ''LineStringSegment'')]))'
+  - name: udvendigDiameterMåleenhedsrestriktion
+    expression: not(ler:udvendigDiameter) or ler:udvendigDiameter/@uom = 'mm'
+  - name: udvendigDiameterVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigDiameter/@xsi:nil = 'true')"
+- xsdtype: ler:LedningEllerLedningstrace
+  variables:
+  - name: etab
+    expression: normalize-space(ler:etableringstidspunkt)
+  - name: isYear
+    expression: matches($etab, '^\d{4}$')
+  - name: isYearMonth
+    expression: matches($etab, '^\d{4}-\d{2}$')
+  - name: isDate
+    expression: matches($etab, '^\d{4}-\d{2}-\d{2}$')
+  - name: afterCutoff
+    expression: 'if ($isDate) then xs:date($etab) gt xs:date(''2023-07-01'')
+
+      else if ($isYearMonth) then $etab gt ''2023-07''
+
+      else if ($isYear) then number($etab) gt 2023
+
+      else false()'
+  assertions:
+  - name: vejledendeDybdeMåleenhedsrestriktion
+    expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
+- xsdtype: ler:Ledningskomponent
+  assertions:
+  - name: vejledendeDybdeMåleenhedsrestriktion
+    expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
+- xsdtype: ler:Ledningstrace
+  assertions:
+  - name: vejledendeDybdeBetingelse
+    expression: "not(\n  $afterCutoff\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
+  - name: vejledendeDybdeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor not(ler:vejledendeDybde/@xsi:nil = 'true')"
+- xsdtype: ler:Roerledning
+  variables:
+  - name: isCirkulaer
+    expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
+  assertions:
+  - name: udvendigBreddeBetingelse
+    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigBredde))"
+  - name: udvendigBreddeMåleenhedsrestriktion
+    expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
+  - name: udvendigBreddeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigBredde/@xsi:nil = 'true')"
+  - name: udvendigDiameterBetingelse
+    expression: "(\n  not($afterCutoff and $isCirkulaer)\n  or\n  (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')\n)\nand\n($isCirkulaer or not(ler:udvendigDiameter))"
+  - name: udvendigHøjdeBetingelse
+    expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigHoejde))"
+  - name: udvendigHøjdeMåleenhedsrestriktion
+    expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
+  - name: udvendigHøjdeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigHoejde/@xsi:nil = 'true')"
+- xsdtype: ler:Telekommunikationsledning
+  assertions:
+  - name: vejledendeDybdeBetingelse
+    expression: "not($afterCutoff and $verticalUnknown)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
+  - name: vejledendeDybdeVoidrestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n)\nor\nnot(ler:vejledendeDybde/@xsi:nil = 'true')"
