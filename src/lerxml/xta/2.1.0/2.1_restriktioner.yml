@@ -95,6 +95,20 @@
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
+- xsdtype: ler:Graveforespoergselssvar
+  assertions:
+  - name: forventetAfleveringstidspunktBetingelse
+    expression: not(ler:forventetAfleveringstidspunkt) or normalize-space(ler:type) = 'udtaget til manuel behandling'
+  - name: idRestriktion
+    expression: matches(ler:id, '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+  - name: indholdGM_ObjectSRIDrestriktion
+    expression: not(.//*[@srsName][not(@srsName = 'http://www.opengis.net/def/crs/EPSG/0/7416')])
+  - name: indholdKoteSRIDrestriktion
+    expression: not(.//*[ends-with(local-name(), 'kote')][@srsName][not(@srsName = 'http://www.opengis.net/def/crs/EPSG/0/5799')])
+  - name: indholdNilReasonRestriktion
+    expression: not(.//*[@xsi:nil = 'true'][@nilReason][not(@nilReason = 'unknown')])
+  - name: typeSupplerendeInfoBetingelse
+    expression: normalize-space(ler:type) != 'ledningsoplysninger udleveres ikke' or ler:typeSupplerendeInfo
 - xsdtype: ler:Ledning
   variables:
   - name: ownRef
