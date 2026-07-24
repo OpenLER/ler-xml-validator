@@ -17,6 +17,7 @@ Samme interface som xsd.py/schematron.py: validate(doc) / validate_file(path)
 """
 
 from collections.abc import Iterator
+from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
 
@@ -126,14 +127,24 @@ def _build_cache() -> dict[str, tuple[list[dict], list[dict]]]:
 _CACHE = _build_cache()
 
 
-def _evaluate(expr: str, node, variables: dict) -> object:
-    token = _PARSER.parse(expr)
-    root = node.getroottree().getroot()
-    ctx = elementpath.XPathContext(root=root, item=node, variables=variables)
+@lru_cache(maxsize=None)
+def _parse(expr: str):
+    return _PARSER.parse(expr)
+
+
+def _evaluate(expr: str, node, root_node, variables: dict) -> object:
+    token = _parse(expr)
+    ctx = elementpath.XPathContext(root=root_node, item=node, variables=variables)
     return token.evaluate(ctx)
 
 
 def validate(doc: _ElementTree) -> Iterator[ValidationError]:
+    # Building elementpath's node-tree wrapper is O(document size); doing it once
+    # per document (instead of once per expression evaluation, as a naive
+    # XPathContext(root=<lxml element>, ...) call would) is what makes bulk
+    # validation of many documents practical.
+    root_node = elementpath.get_node_tree(doc.getroot(), namespaces=NAMESPACES)
+
     for elem in doc.iter(tag=etree.Element):
         local_name = etree.QName(elem).localname
         entry = _CACHE.get(local_name)
@@ -143,10 +154,10 @@ def validate(doc: _ElementTree) -> Iterator[ValidationError]:
 
         variables: dict = {}
         for var in variable_defs:
-            variables[var["name"]] = _evaluate(var["expression"], elem, variables)
+            variables[var["name"]] = _evaluate(var["expression"], elem, root_node, variables)
 
         for assertion in assertions:
-            ok = _evaluate(assertion["expression"], elem, variables)
+            ok = _evaluate(assertion["expression"], elem, root_node, variables)
             if not ok:
                 yield ValidationError(
                     code=assertion["name"],
