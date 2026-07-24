@@ -32,6 +32,13 @@ from .xsd import schema as xsd_schema
 
 XTA_DIR = files("lerxml") / "xta"
 
+# The assertions in xta/*.yml are only transcribed against 2.2.0's schema so
+# far (see featurekatalog/constraints/{version}/*.yml for the untranslated
+# natural-language source for the other LER versions). Until the other
+# versions get their own rule set, validate() is a no-op for them rather than
+# incorrectly applying 2.2.0-specific rules to older documents.
+RULES_VERSION = "2.2.0"
+
 NAMESPACES = {
     "ler": "http://data.gov.dk/schemas/LER/2/gml",
     "gml": "http://www.opengis.net/gml/3.2",
@@ -138,7 +145,10 @@ def _evaluate(expr: str, node, root_node, variables: dict) -> object:
     return token.evaluate(ctx)
 
 
-def validate(doc: _ElementTree) -> Iterator[ValidationError]:
+def validate(doc: _ElementTree, version: str = RULES_VERSION) -> Iterator[ValidationError]:
+    if version != RULES_VERSION:
+        return
+
     # Building elementpath's node-tree wrapper is O(document size); doing it once
     # per document (instead of once per expression evaluation, as a naive
     # XPathContext(root=<lxml element>, ...) call would) is what makes bulk
@@ -166,11 +176,11 @@ def validate(doc: _ElementTree) -> Iterator[ValidationError]:
                 )
 
 
-def validate_file(path: str | Path) -> Iterator[ValidationError]:
+def validate_file(path: str | Path, version: str = RULES_VERSION) -> Iterator[ValidationError]:
     doc = etree.parse(str(path))
-    yield from validate(doc)
+    yield from validate(doc, version)
 
 
-def validate_string(xml: str) -> Iterator[ValidationError]:
+def validate_string(xml: str, version: str = RULES_VERSION) -> Iterator[ValidationError]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
-    yield from validate(doc)
+    yield from validate(doc, version)
