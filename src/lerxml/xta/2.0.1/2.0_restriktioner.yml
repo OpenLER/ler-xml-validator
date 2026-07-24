@@ -21,6 +21,10 @@
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
   - name: geometriVertikaleKoordinaterRestriktion
     expression: not($afterCutoff) or not($verticalUnknown)
+- xsdtype: ler:AndenKomponent
+  assertions:
+  - name: forsyningsartRestriktion
+    expression: "not(\n  normalize-space(ler:forsyningsart)\n  = ('afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand')\n)"
 - xsdtype: ler:AndenLedning
   variables:
   - name: zValues
@@ -44,6 +48,8 @@
     expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
 - xsdtype: ler:Elkomponent
   assertions:
+  - name: relativNiveauTilladelse
+    expression: not(ler:relativNiveau) or normalize-space(ler:type) = 'rørblok'
   - name: spændingsniveauMåleenhedsrestriktion
     expression: not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'
 - xsdtype: ler:Elledning
@@ -96,6 +102,11 @@
     expression: not(.//*[@xsi:nil = 'true'][@nilReason][not(@nilReason = 'unknown')])
   - name: typeSupplerendeInfoBetingelse
     expression: normalize-space(ler:type) != 'ledningsoplysninger udleveres ikke' or ler:typeSupplerendeInfo
+- xsdtype: ler:Informationsressource
+  assertions:
+  - name: geometriDatatyperestriktion
+    expression: "not($geom)\nor local-name($geom) = ('Point', 'MultiPoint')\nor local-name($geom) = 'LineString'\nor (\n  local-name($geom) = 'Curve'\n  and not($geom/gml:segments/*[not(local-name() = 'LineStringSegment')])\n)\nor (\n  local-name($geom) = 'MultiCurve'\n  and not($geom//gml:curveMember/*[\n    not(self::gml:LineString)\n    and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n  ])\n)\nor (\n  local-name($geom) = 'Polygon'\n  and not($geom/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'Surface'\n  and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])\n  and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n\
+      \    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'MultiSurface'\n  and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])\n  and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)"
 - xsdtype: ler:Ledning
   variables:
   - name: ownRef
@@ -139,7 +150,13 @@
   - name: vejledendeDybdeMåleenhedsrestriktion
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
 - xsdtype: ler:Ledningskomponent
+  variables:
+  - name: geom
+    expression: ler:geometri/*
   assertions:
+  - name: geometriDatatyperestriktion
+    expression: "not($geom)\nor local-name($geom) = ('Point', 'MultiPoint')\nor local-name($geom) = 'LineString'\nor (\n  local-name($geom) = 'Curve'\n  and not($geom/gml:segments/*[not(local-name() = 'LineStringSegment')])\n)\nor (\n  local-name($geom) = 'MultiCurve'\n  and not($geom//gml:curveMember/*[\n    not(self::gml:LineString)\n    and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n  ])\n)\nor (\n  local-name($geom) = 'Polygon'\n  and not($geom/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'Surface'\n  and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])\n  and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n\
+      \    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)\nor (\n  local-name($geom) = 'MultiSurface'\n  and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])\n  and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[\n    not(self::gml:LinearRing)\n    and not(\n      self::gml:Ring\n      and not(gml:curveMember/*[\n        not(self::gml:LineString)\n        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n      ])\n    )\n  ])\n)"
   - name: vejledendeDybdeMåleenhedsrestriktion
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
 - xsdtype: ler:Ledningstrace
@@ -206,6 +223,14 @@
     expression: not(ler:temperatur) or ler:temperatur/@uom = 'Cel'
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
+- xsdtype: ler:Vandkomponent
+  assertions:
+  - name: anborstedTilladelse
+    expression: not(ler:anborsted) or normalize-space(ler:type) = 'tilslutningspunkt'
+  - name: stutskoteTilladelse
+    expression: not(ler:stutskote) or normalize-space(ler:type) = ('tapsted', 'ventil')
+  - name: tapstedstypeTilladelse
+    expression: not(ler:tapstedstype) or normalize-space(ler:type) = 'tapsted'
 - xsdtype: ler:Vandledning
   variables:
   - name: zValues

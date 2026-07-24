@@ -443,3 +443,96 @@
       and not(ler:vejledendeDybde/@xsi:nil = 'true')
       and normalize-space(ler:vejledendeDybde) != ''
     )
+
+- text: |-
+    Geometrien skal have en af følgende typer: GM_Point, GM_MultiPoint, GM_Curve, GM_MultiCurve, GM_Surface eller GM_MultiSurface.
+    Geometrien skal anvende lineær interpolation hvis dens type er GM_Curve eller GM_MultiCurve.
+    Note: I en GML-indkodning betyder det, at geometritypen skal være en af følgende [GML SF]:
+    * gml:LineString
+    * gml:Curve som består af segmenter af typen gml:LineStringSegment
+    Note 2: En kurve kan være enkeltstående eller kan indgå i en flade, som del af en grænse.
+    Geometrien skal anvende 2-dimensionel interpolation (på engelsk: "planar interpolation") hvis dens type er GM_Surface eller GM_MultiSurface.
+    Note: I en GML-indkodning betyder det, at geometritypen skal være en af følgende [GML SF]:
+    * gml:Polygon
+    * gml:Surface som består af dele af typen gml:PolygonPatch
+    Geometriens grænser skal anvende lineær interpolation hvis geometriens type er GM_Surface eller GM_MultiSurface.
+    Note: I en GML-indkodning betyder det, at en grænse af en flade eller en multiflade skal have en af følgende geometrityper [GML SF]:
+    * gml:LinearRing
+    * gml:Ring som består af kurver der anvender lineær interpolation (se ovenfor)
+  expression: |-
+    not($geom)
+    or local-name($geom) = ('Point', 'MultiPoint')
+    or local-name($geom) = 'LineString'
+    or (
+      local-name($geom) = 'Curve'
+      and not($geom/gml:segments/*[not(local-name() = 'LineStringSegment')])
+    )
+    or (
+      local-name($geom) = 'MultiCurve'
+      and not($geom//gml:curveMember/*[
+        not(self::gml:LineString)
+        and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+      ])
+    )
+    or (
+      local-name($geom) = 'Polygon'
+      and not($geom/(gml:exterior | gml:interior)/*[
+        not(self::gml:LinearRing)
+        and not(
+          self::gml:Ring
+          and not(gml:curveMember/*[
+            not(self::gml:LineString)
+            and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+          ])
+        )
+      ])
+    )
+    or (
+      local-name($geom) = 'Surface'
+      and not($geom/gml:patches/*[not(self::gml:PolygonPatch)])
+      and not($geom/gml:patches/gml:PolygonPatch/(gml:exterior | gml:interior)/*[
+        not(self::gml:LinearRing)
+        and not(
+          self::gml:Ring
+          and not(gml:curveMember/*[
+            not(self::gml:LineString)
+            and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+          ])
+        )
+      ])
+    )
+    or (
+      local-name($geom) = 'MultiSurface'
+      and not($geom//gml:surfaceMember/*[not(self::gml:Polygon) and not(self::gml:Surface)])
+      and not($geom//gml:surfaceMember/(gml:Polygon | gml:Surface/gml:patches/gml:PolygonPatch)/(gml:exterior | gml:interior)/*[
+        not(self::gml:LinearRing)
+        and not(
+          self::gml:Ring
+          and not(gml:curveMember/*[
+            not(self::gml:LineString)
+            and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))
+          ])
+        )
+      ])
+    )
+
+- text: |-
+    Forsyningsarten må ikke være en af de prædefinerede værdier fra kodelisten Forsyningsart.
+    Note: Hvis man har behov for at afgive oplysninger om en ledningskomponent som har en forsyningsart som er prædefineret i kodelisten Forsyningsart, så skal man i stedet for AndenKomponent bruge den subklasse af Ledningskomponent som hører til den forsyningsart. Fx Telekommunikationskomponent for forsyningsarten telekommunikation.
+  expression: |-
+    not(
+      normalize-space(ler:forsyningsart)
+      = ('afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand')
+    )
+
+- text: Det relative niveau må kun være angivet hvis typen er rørblok.
+  expression: not(ler:relativNiveau) or normalize-space(ler:type) = 'rørblok'
+
+- text: Anborstedet må kun være angivet hvis typen er tilslutningspunkt.
+  expression: not(ler:anborsted) or normalize-space(ler:type) = 'tilslutningspunkt'
+
+- text: 'Stutskoten må kun være angivet hvis typen er en af følgende: tapsted, ventil.'
+  expression: not(ler:stutskote) or normalize-space(ler:type) = ('tapsted', 'ventil')
+
+- text: Tapstedstypen må kun være angivet hvis typen er tapsted.
+  expression: not(ler:tapstedstype) or normalize-space(ler:type) = 'tapsted'
