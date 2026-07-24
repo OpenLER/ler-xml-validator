@@ -68,6 +68,8 @@
       or ler:geometri/gml:LineString
 
       or (ler:geometri/gml:Curve and not(ler:geometri/gml:Curve/gml:segments/*[not(local-name() = ''LineStringSegment'')]))'
+  - name: nøjagtighedsklasseVoidrestriktion
+    expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
   - name: udvendigDiameterMåleenhedsrestriktion
     expression: not(ler:udvendigDiameter) or ler:udvendigDiameter/@uom = 'mm'
 - xsdtype: ler:LedningEllerLedningstrace
@@ -95,6 +97,10 @@
   assertions:
   - name: vejledendeDybdeMåleenhedsrestriktion
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
+- xsdtype: ler:Ledningstrace
+  assertions:
+  - name: nøjagtighedsklasseVoidrestriktion
+    expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
 - xsdtype: ler:Olieledning
   assertions:
   - name: fareklasseRestriktion
