@@ -1,6 +1,6 @@
 # Ordbog: menneskelig restriktionstekst (fra featurekatalog/constraints/{version}/*.yml's
 # "expression"-felt) -> XPath-udtryk. build_xta.py slår hver restriktions tekst op her
-# for at generere xta/versions/{version}/restriktioner.yml automatisk.
+# for at generere src/lerxml/xta/{version}/{major.minor}_restriktioner.yml automatisk.
 #
 # Nøglen er selve teksten (normaliseret whitespace ved opslag), ikke regel-navnet -
 # samme navn kan betyde noget forskelligt for forskellige xsdtyper (fx
@@ -254,3 +254,38 @@
       and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')
     )
     or not(ler:vejledendeDybde/@xsi:nil = 'true')
+
+- text: Fareklassen må ikke være meget farlig.
+  expression: normalize-space(ler:fareklasse) != 'meget farlig'
+
+- text: |-
+    Fareklassen skal være meget farlig hvis elledningen har et spændingsniveau på 10 kV eller mere.
+    Fareklassen må ikke være meget farlig hvis elledningen har et spændingsniveau på mindre end 10 kV.
+  expression: |-
+    (number(ler:spaendingsniveau) >= 10 and normalize-space(ler:fareklasse) = 'meget farlig')
+    or (not(number(ler:spaendingsniveau) >= 10) and normalize-space(ler:fareklasse) != 'meget farlig')
+
+- text: |-
+    Fareklassen skal være meget farlig hvis gasledningen har et tryk på 19 bar eller mere.
+    Fareklassen må ikke være meget farlig hvis gasledningen har et tryk på mindre end 19 bar.
+  expression: |-
+    (number(ler:tryk) >= 19 and normalize-space(ler:fareklasse) = 'meget farlig')
+    or (not(number(ler:tryk) >= 19) and normalize-space(ler:fareklasse) != 'meget farlig')
+
+- text: |-
+    Fareklassen skal være meget farlig hvis en eller flere af følgende betingelser er sande:
+    * den termiske ledning har en temperatur på mere end 130 °C
+    * den termiske ledning har et tryk på 10 bar eller mere
+    Fareklassen må ikke være meget farlig hvis alle følgende betingelser er sande:
+    * den termiske ledning har en temperatur på 130 °C eller mindre
+    * den termiske ledning har et tryk på mindre end 10 bar
+  expression: |-
+    (
+      (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
+      and normalize-space(ler:fareklasse) = 'meget farlig'
+    )
+    or
+    (
+      not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
+      and normalize-space(ler:fareklasse) != 'meget farlig'
+    )

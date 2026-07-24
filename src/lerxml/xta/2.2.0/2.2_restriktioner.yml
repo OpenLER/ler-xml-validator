@@ -145,7 +145,13 @@
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not(ler:udvendigHoejde/@xsi:nil = 'true')"
 - xsdtype: ler:Telekommunikationsledning
   assertions:
+  - name: fareklasseRestriktion
+    expression: normalize-space(ler:fareklasse) != 'meget farlig'
   - name: vejledendeDybdeBetingelse
     expression: "not($afterCutoff and $verticalUnknown)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
   - name: vejledendeDybdeVoidrestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n)\nor\nnot(ler:vejledendeDybde/@xsi:nil = 'true')"
+- xsdtype: ler:Vandledning
+  assertions:
+  - name: fareklasseRestriktion
+    expression: normalize-space(ler:fareklasse) != 'meget farlig'

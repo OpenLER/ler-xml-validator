@@ -1,5 +1,11 @@
+- xsdtype: ler:Afloebsledning
+  assertions:
+  - name: fareklasseRestriktion
+    expression: normalize-space(ler:fareklasse) != 'meget farlig'
 - xsdtype: ler:AndenLedning
   assertions:
+  - name: fareklasseRestriktion
+    expression: normalize-space(ler:fareklasse) != 'meget farlig'
   - name: udvendigBreddeMåleenhedsrestriktion
     expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
   - name: udvendigDiameterBetingelse
@@ -19,10 +25,20 @@
   - name: verticalUnknown
     expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
+  - name: fareklasseRestriktion
+    expression: '(number(ler:spaendingsniveau) >= 10 and normalize-space(ler:fareklasse) = ''meget farlig'')
+
+      or (not(number(ler:spaendingsniveau) >= 10) and normalize-space(ler:fareklasse) != ''meget farlig'')'
   - name: spændingsniveauMåleenhedsrestriktion
     expression: not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'
   - name: udvendigDiameterBetingelse
     expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
+- xsdtype: ler:Gasledning
+  assertions:
+  - name: fareklasseRestriktion
+    expression: '(number(ler:tryk) >= 19 and normalize-space(ler:fareklasse) = ''meget farlig'')
+
+      or (not(number(ler:tryk) >= 19) and normalize-space(ler:fareklasse) != ''meget farlig'')'
 - xsdtype: ler:Ledning
   variables:
   - name: ownRef
@@ -67,6 +83,10 @@
   assertions:
   - name: vejledendeDybdeMåleenhedsrestriktion
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
+- xsdtype: ler:Olieledning
+  assertions:
+  - name: fareklasseRestriktion
+    expression: normalize-space(ler:fareklasse) != 'meget farlig'
 - xsdtype: ler:Roerledning
   variables:
   - name: isCirkulaer
@@ -78,5 +98,15 @@
     expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
 - xsdtype: ler:Telekommunikationsledning
   assertions:
+  - name: fareklasseRestriktion
+    expression: normalize-space(ler:fareklasse) != 'meget farlig'
   - name: udvendigDiameterBetingelse
     expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
+- xsdtype: ler:TermiskLedning
+  assertions:
+  - name: fareklasseRestriktion
+    expression: "(\n  (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) = 'meget farlig'\n)\nor\n(\n  not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) != 'meget farlig'\n)"
+- xsdtype: ler:Vandledning
+  assertions:
+  - name: fareklasseRestriktion
+    expression: normalize-space(ler:fareklasse) != 'meget farlig'
