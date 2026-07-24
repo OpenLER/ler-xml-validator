@@ -8,8 +8,28 @@
     expression: not(ler:bundlaengde) or ler:bundlaengde/@uom = 'mm'
   - name: bundlængdeTilladelse
     expression: "not(ler:bundlaengde)\nor (\n  normalize-space(ler:type) = 'brønd'\n  and (normalize-space(ler:broendform) = 'kvadratisk' or normalize-space(ler:broendform) = 'rektangulær')\n)"
-- xsdtype: ler:AndenLedning
+- xsdtype: ler:Afloebsledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
+- xsdtype: ler:AndenLedning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
   - name: udvendigBreddeBetingelse
     expression: "(\n  not($afterCutoff and not($isCirkulaer))\n  or\n  (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')\n)\nand\n(not($isCirkulaer) or not(ler:udvendigBredde))"
   - name: udvendigBreddeMåleenhedsrestriktion
@@ -63,7 +83,16 @@
   - name: vejledendeDybdeVoidrestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor not(ler:vejledendeDybde/@xsi:nil = 'true')"
 - xsdtype: ler:Gasledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Ledning
@@ -130,6 +159,12 @@
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
 - xsdtype: ler:Ledningstrace
   assertions:
+  - name: breddeMåleenhedsrestriktion
+    expression: not(ler:bredde) or ler:bredde/@uom = 'mm'
+  - name: geometriDatatyperestriktion
+    expression: "not(\n  ler:geometri//gml:curveMember/*[\n    not(self::gml:LineString)\n    and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n  ]\n)"
+  - name: nøjagtighedsklasseBetingelse
+    expression: boolean(ler:noejagtighedsklasse)
   - name: nøjagtighedsklasseVertikalBetingelse
     expression: boolean(ler:noejagtighedsklasseVertikal)
   - name: nøjagtighedsklasseVertikalVoidrestriktion
@@ -141,7 +176,16 @@
   - name: vejledendeDybdeVoidrestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor not(ler:vejledendeDybde/@xsi:nil = 'true')"
 - xsdtype: ler:Olieledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Roerledning
@@ -172,10 +216,28 @@
   - name: vejledendeDybdeVoidrestriktion
     expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n  and $verticalUnknown\n)\nor\nnot(ler:vejledendeDybde/@xsi:nil = 'true')"
 - xsdtype: ler:TermiskLedning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Vandledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')\n  and normalize-space(ler:driftsstatus) != 'under etablering'\n)\nor not($verticalUnknown)"

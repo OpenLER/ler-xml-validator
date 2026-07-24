@@ -25,6 +25,11 @@
   - name: ownRef
     expression: concat('#', @gml:id)
 
+- xsdtype: ler:Roerledning
+  variables:
+  - name: isCirkulaer
+    expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
+
 - xsdtype: ler:Elledning
   variables:
   - name: zValues
@@ -33,11 +38,6 @@
       return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
   - name: verticalUnknown
     expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
-
-- xsdtype: ler:Roerledning
-  variables:
-  - name: isCirkulaer
-    expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
 
 - xsdtype: ler:Foeringsroer
   variables:
@@ -49,3 +49,57 @@
     expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   - name: primaryForsyningsart
     expression: normalize-space(ler:forsyningsart[1])
+
+- xsdtype: ler:Afloebsledning
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+
+- xsdtype: ler:AndenLedning
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+
+- xsdtype: ler:Gasledning
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+
+- xsdtype: ler:Olieledning
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+
+- xsdtype: ler:TermiskLedning
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+
+- xsdtype: ler:Vandledning
+  variables:
+  - name: zValues
+    expression: |-
+      for $pl in ler:geometri//gml:posList
+      return tokenize(normalize-space($pl), '\s+')[position() mod 3 = 0]
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')

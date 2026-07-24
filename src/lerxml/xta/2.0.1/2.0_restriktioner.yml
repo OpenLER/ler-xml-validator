@@ -9,10 +9,24 @@
   - name: bundlængdeTilladelse
     expression: "not(ler:bundlaengde)\nor (\n  normalize-space(ler:type) = 'brønd'\n  and (normalize-space(ler:broendform) = 'kvadratisk' or normalize-space(ler:broendform) = 'rektangulær')\n)"
 - xsdtype: ler:Afloebsledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
 - xsdtype: ler:AndenLedning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
@@ -44,6 +58,13 @@
   - name: udvendigDiameterBetingelse
     expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
 - xsdtype: ler:Gasledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: '(number(ler:tryk) >= 19 and normalize-space(ler:fareklasse) = ''meget farlig'')
@@ -99,9 +120,20 @@
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
 - xsdtype: ler:Ledningstrace
   assertions:
+  - name: breddeMåleenhedsrestriktion
+    expression: not(ler:bredde) or ler:bredde/@uom = 'mm'
+  - name: geometriDatatyperestriktion
+    expression: "not(\n  ler:geometri//gml:curveMember/*[\n    not(self::gml:LineString)\n    and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n  ]\n)"
   - name: nøjagtighedsklasseVoidrestriktion
     expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
 - xsdtype: ler:Olieledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
@@ -123,12 +155,26 @@
   - name: udvendigDiameterBetingelse
     expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
 - xsdtype: ler:TermiskLedning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: "(\n  (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) = 'meget farlig'\n)\nor\n(\n  not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) != 'meget farlig'\n)"
   - name: trykMåleenhedsrestriktion
     expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Vandledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
