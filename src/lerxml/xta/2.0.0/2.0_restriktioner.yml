@@ -61,6 +61,8 @@
     expression: not(ler:spaendingsniveau) or ler:spaendingsniveau/@uom = 'kV'
   - name: udvendigDiameterBetingelse
     expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
+  - name: vejledendeDybdeRestriktion
+    expression: "not($afterCutoff and $verticalUnknown)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
 - xsdtype: ler:Gasledning
   variables:
   - name: zValues
@@ -169,11 +171,20 @@
   - name: udvendigHøjdeMåleenhedsrestriktion
     expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
 - xsdtype: ler:Telekommunikationsledning
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
   - name: udvendigDiameterBetingelse
     expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
+  - name: vejledendeDybdeRestriktion
+    expression: "not($afterCutoff and $verticalUnknown)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
 - xsdtype: ler:TermiskLedning
   variables:
   - name: zValues

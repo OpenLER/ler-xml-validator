@@ -420,3 +420,26 @@
 
 - text: Måleenheden for temperaturen skal være grader celsius. Grader celsius skal angives med symbolet Cel [UCUM].
   expression: not(ler:temperatur) or ler:temperatur/@uom = 'Cel'
+
+- text: Den udvendige diameter skal være angivet hvis  etableringstidspunktet er efter skæringsdatoen.
+  expression: |-
+    not($afterCutoff)
+    or
+    (
+      ler:udvendigDiameter
+      and not(ler:udvendigDiameter/@xsi:nil = 'true')
+      and normalize-space(ler:udvendigDiameter) != ''
+    )
+
+- text: |-
+    Den vejledende dybde skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen
+    * de vertikale koordinater i geometrien er ukendt-værdien på -99
+  expression: |-
+    not($afterCutoff and $verticalUnknown)
+    or
+    (
+      ler:vejledendeDybde
+      and not(ler:vejledendeDybde/@xsi:nil = 'true')
+      and normalize-space(ler:vejledendeDybde) != ''
+    )
