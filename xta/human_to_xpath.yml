@@ -289,3 +289,6 @@
       not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)
       and normalize-space(ler:fareklasse) != 'meget farlig'
     )
+
+- text: Måleenheden for trykket skal være bar. Bar skal angives med symbolet bar [UCUM].
+  expression: not(ler:tryk) or ler:tryk/@uom = 'bar'

@@ -39,6 +39,8 @@
     expression: '(number(ler:tryk) >= 19 and normalize-space(ler:fareklasse) = ''meget farlig'')
 
       or (not(number(ler:tryk) >= 19) and normalize-space(ler:fareklasse) != ''meget farlig'')'
+  - name: trykMåleenhedsrestriktion
+    expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Ledning
   variables:
   - name: ownRef
@@ -87,6 +89,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: normalize-space(ler:fareklasse) != 'meget farlig'
+  - name: trykMåleenhedsrestriktion
+    expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Roerledning
   variables:
   - name: isCirkulaer
@@ -106,6 +110,8 @@
   assertions:
   - name: fareklasseRestriktion
     expression: "(\n  (number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) = 'meget farlig'\n)\nor\n(\n  not(number(ler:temperatur) > 130 or number(ler:tryk) >= 10)\n  and normalize-space(ler:fareklasse) != 'meget farlig'\n)"
+  - name: trykMåleenhedsrestriktion
+    expression: not(ler:tryk) or ler:tryk/@uom = 'bar'
 - xsdtype: ler:Vandledning
   assertions:
   - name: fareklasseRestriktion
