@@ -1,0 +1,17 @@
+source: $FT/Føringsrør.xml
+assertions: []
+branches:
+  - name: convert to rektangulær
+    xquery: |-
+      replace value of node $doc//ler:tvaersnitsform with "rektangulær",
+      delete node $doc//ler:udvendigDiameter,
+      insert nodes (<ler:udvendigBredde uom="mm">300</ler:udvendigBredde>, <ler:udvendigHoejde uom="mm">200</ler:udvendigHoejde>) after $doc//ler:tvaersnitsform
+    assertions: []
+    branches:
+      - name: set udvendigHoejde nil
+        xquery: replace node $doc//ler:udvendigHoejde with <ler:udvendigHoejde uom="mm" xsi:nil="true"/>
+        assertions: [udvendigHøjdeBetingelse, udvendigHøjdeVoidrestriktion]
+        branches:
+          - name: set 2022
+            xquery: replace value of node $doc//ler:etableringstidspunkt with "2022"
+            assertions: []

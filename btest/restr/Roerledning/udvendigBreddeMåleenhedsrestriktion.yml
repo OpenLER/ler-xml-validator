@@ -1,0 +1,9 @@
+source: $FT/Føringsrør.xml
+assertions: []
+branches:
+  - name: convert to rektangulær with wrong bredde uom
+    xquery: |-
+      replace value of node $doc//ler:tvaersnitsform with "rektangulær",
+      delete node $doc//ler:udvendigDiameter,
+      insert nodes (<ler:udvendigBredde uom="cm">30</ler:udvendigBredde>, <ler:udvendigHoejde uom="mm">200</ler:udvendigHoejde>) after $doc//ler:tvaersnitsform
+    assertions: [udvendigBreddeMåleenhedsrestriktion]

@@ -1,0 +1,12 @@
+source: $FT/Føringsrør.xml
+assertions: []
+branches:
+  - name: convert to rektangulær but keep udvendigDiameter
+    xquery: |-
+      replace value of node $doc//ler:tvaersnitsform with "rektangulær",
+      insert nodes (<ler:udvendigBredde uom="mm">300</ler:udvendigBredde>, <ler:udvendigHoejde uom="mm">200</ler:udvendigHoejde>) after $doc//ler:tvaersnitsform
+    assertions: [udvendigDiameterBetingelse]
+
+  - name: delete udvendigDiameter while cirkulær
+    xquery: delete node $doc//ler:udvendigDiameter
+    assertions: [udvendigDiameterBetingelse]

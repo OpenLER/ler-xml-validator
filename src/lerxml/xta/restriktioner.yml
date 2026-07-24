@@ -107,6 +107,58 @@
       )
       or
       not(ler:vejledendeDybde/@xsi:nil = 'true')
+- xsdtype: ler:Roerledning
+  variables:
+  - name: isCirkulaer
+    expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
+  assertions:
+  - name: udvendigBreddeBetingelse
+    expression: |-
+      (
+        not($afterCutoff and not($isCirkulaer))
+        or
+        (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')
+      )
+      and
+      (not($isCirkulaer) or not(ler:udvendigBredde))
+  - name: udvendigBreddeMåleenhedsrestriktion
+    expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
+  - name: udvendigBreddeVoidrestriktion
+    expression: |-
+      not(
+        $afterCutoff
+        and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+        and normalize-space(ler:driftsstatus) != 'under etablering'
+      )
+      or not(ler:udvendigBredde/@xsi:nil = 'true')
+  - name: udvendigDiameterBetingelse
+    expression: |-
+      (
+        not($afterCutoff and $isCirkulaer)
+        or
+        (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')
+      )
+      and
+      ($isCirkulaer or not(ler:udvendigDiameter))
+  - name: udvendigHøjdeBetingelse
+    expression: |-
+      (
+        not($afterCutoff and not($isCirkulaer))
+        or
+        (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')
+      )
+      and
+      (not($isCirkulaer) or not(ler:udvendigHoejde))
+  - name: udvendigHøjdeMåleenhedsrestriktion
+    expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
+  - name: udvendigHøjdeVoidrestriktion
+    expression: |-
+      not(
+        $afterCutoff
+        and (not(ler:ejerskabsforhold) or normalize-space(ler:ejerskabsforhold) = 'ejet af udleverende ledningsejer')
+        and normalize-space(ler:driftsstatus) != 'under etablering'
+      )
+      or not(ler:udvendigHoejde/@xsi:nil = 'true')
 - xsdtype: ler:Foeringsroer
   variables:
   - name: zValues
