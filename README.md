@@ -110,3 +110,14 @@ Restriktionerne kan kan findes i yaml-filer i mappen constraints ([link](https:/
 
 Den statiske hjemmeside viser også forskellige informationer omkr strukturen;
 denne information kommer fra XSD-filerne.
+
+### Hvad gør build_xta.py?
+
+Den bruges alene til at opdatere filer, der allerede er committed til repo. Så med mindre du udvikler på dette repo, så er der ingen grund til at køre den. 
+
+Scriptet itererer over alle restriktionerne i yml filer i $FEATUREKATALOG_DIR/constraints/<version>,
+og så laver den tilsvarende xta filer, fx src/xta/2.2.0/2.2_restriktioner.yml.
+
+Den kigger på restriktionens tekst (human text) og slår det op i human_to_xpath.yml. Rigtigt mange
+restriktioner har præcist samme restriktionstekst, og med denne lookup løsning, så
+har jeg kunnet nøjes med at skrive én XPath assertion for hvert af disse.

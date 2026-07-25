@@ -10,12 +10,16 @@ Restrictions whose text isn't found yet are reported as gaps (not silently
 skipped) — the script exits non-zero if there are any, listing exactly what's
 missing so the dictionary can be extended.
 
+Expects the featurekatalog repo cloned as a sibling directory (../featurekatalog)
+by default; override with $FEATUREKATALOG_DIR or --featurekatalog.
+
 Usage:
   python build_xta.py
   python build_xta.py --featurekatalog ~/other/path/to/featurekatalog
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -27,7 +31,11 @@ OUT_DIR = XTA_DIR
 DICTIONARY_PATH = REPO_ROOT / "xta" / "human_to_xpath.yml"
 VARIABLES_PATH = REPO_ROOT / "xta" / "variabler.yml"
 
-DEFAULT_FEATUREKATALOG = Path("~/a/lerinfo/featurekatalog").expanduser()
+# Expects featurekatalog cloned as a sibling directory to this repo by default
+# (../featurekatalog); override with FEATUREKATALOG_DIR or --featurekatalog.
+DEFAULT_FEATUREKATALOG = Path(
+    os.environ.get("FEATUREKATALOG_DIR", REPO_ROOT.parent / "featurekatalog")
+).expanduser()
 
 VERSIONS = ["2.0.0", "2.0.1", "2.1.0", "2.2.0"]
 
@@ -123,7 +131,10 @@ def main() -> None:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--featurekatalog", type=Path, default=DEFAULT_FEATUREKATALOG)
+    parser.add_argument(
+        "--featurekatalog", type=Path, default=DEFAULT_FEATUREKATALOG,
+        help="Path to the featurekatalog repo (default: ../featurekatalog, or $FEATUREKATALOG_DIR if set)",
+    )
     parser.add_argument(
         "-v", "--verbose",
         action="store_true",
