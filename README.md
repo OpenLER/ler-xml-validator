@@ -87,7 +87,7 @@ basexserver stop
 Jeg har indført et yml format, som beskriver hvilken xml fil, der skal loades,
 hvordan dette dokument skal manipuleres, og hvilke validerings koder,
 det bør give. Det er en rekursiv struktur, og derfor er printout også formet
-som et træ.
+som et træ. `b` står for branches.
 
 ### Kør btest.py
 
@@ -113,7 +113,7 @@ denne information kommer fra XSD-filerne.
 
 ### Hvad gør build_xta.py?
 
-Den bruges alene til at opdatere filer, der allerede er committed til repo. Så med mindre du udvikler på dette repo, så er der ingen grund til at køre den. 
+Den bruges alene til at opdatere filer, der allerede er committed til repo. Så med mindre du udvikler/debugger på dette repo, så er der ingen grund til at køre den. 
 
 Scriptet itererer over alle restriktionerne i yml filer i $FEATUREKATALOG_DIR/constraints/<version>,
 og så laver den tilsvarende xta filer, fx src/xta/2.2.0/2.2_restriktioner.yml.
