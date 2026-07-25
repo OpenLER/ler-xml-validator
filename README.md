@@ -104,9 +104,9 @@ Jeg har skrevet til LER og spurgt efter en sådan fil, men fik blot svar om,
 at de ikke havde en sådan fil, og henviste til XSD.
 
 Derfor har jeg bygget et værktøj, der kunne extracte data fra docx-filerne.
-Dette værktøj er en del af mit featurekatalog repo ([link](https://github.com/lerinfo/featurekatalog)).
+Dette værktøj er en del af mit featurekatalog repo ([link](https://github.com/OpenLER/featurekatalog)).
 
-Restriktionerne kan kan findes i yaml-filer i mappen constraints ([link](https://github.com/lerinfo/featurekatalog/tree/main/constraints)).
+Restriktionerne kan kan findes i yaml-filer i mappen constraints ([link](https://github.com/OpenLER/featurekatalog/tree/main/constraints)).
 
 Den statiske hjemmeside viser også forskellige informationer omkr strukturen;
 denne information kommer fra XSD-filerne.
