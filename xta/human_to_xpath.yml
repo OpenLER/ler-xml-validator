@@ -54,6 +54,13 @@
     or (not(ler:geometri) and not(ler:noejagtighedsklasse))
 
 - text: |-
+    Nøjagtighedsklassen skal være angivet hvis geometrien er angivet.
+    Nøjagtighedsklassen må ikke være angivet hvis geometrien ikke er angivet.
+  expression: |-
+    (ler:geometri and ler:noejagtighedsklasse)
+    or (not(ler:geometri) and not(ler:noejagtighedsklasse))
+
+- text: |-
     Nøjagtighedsklassen for den vertikale placering skal være angivet hvis geometrien er angivet.
     Nøjagtighedsklassen for den vertikale placering må ikke være angivet hvis geometrien ikke er angivet.
   expression: |-
@@ -381,6 +388,11 @@
 - text: |-
     Nøjagtighedsklassen for den horisontale placering skal være angivet.
     Note: Denne restriktion er nødvendig, da attribut "nøjagtighedsklasse" er defineret på LedningEllerLedningstrace med multiplicitet 0..1.
+  expression: boolean(ler:noejagtighedsklasse)
+
+- text: |-
+    Nøjagtighedsklassen skal være angivet.
+    Note: Denne restriktion er nødvendig, da nøjagtighedsklasse er defineret på LedningEllerLedningstrace med multiplicitet 0..1.
   expression: boolean(ler:noejagtighedsklasse)
 
 - text: |-

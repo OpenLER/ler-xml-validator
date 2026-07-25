@@ -197,6 +197,10 @@
       or ler:geometri/gml:LineString
 
       or (ler:geometri/gml:Curve and not(ler:geometri/gml:Curve/gml:segments/*[not(local-name() = ''LineStringSegment'')]))'
+  - name: nøjagtighedsklasseBetingelse
+    expression: '(ler:geometri and ler:noejagtighedsklasse)
+
+      or (not(ler:geometri) and not(ler:noejagtighedsklasse))'
   - name: nøjagtighedsklasseVoidrestriktion
     expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
   - name: udvendigDiameterMåleenhedsrestriktion
@@ -237,6 +241,8 @@
     expression: not(ler:bredde) or ler:bredde/@uom = 'mm'
   - name: geometriDatatyperestriktion
     expression: "not(\n  ler:geometri//gml:curveMember/*[\n    not(self::gml:LineString)\n    and not(self::gml:Curve and not(gml:segments/*[not(local-name() = 'LineStringSegment')]))\n  ]\n)"
+  - name: nøjagtighedsklasseBetingelse
+    expression: boolean(ler:noejagtighedsklasse)
   - name: nøjagtighedsklasseVoidrestriktion
     expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
 - xsdtype: ler:LinearAnnotation
