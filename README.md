@@ -2,31 +2,67 @@
 
 Et python library og cli værktøj til at validere den LER XML (LER 2.2).
 
-Der foregår tre former for validering, i følgende rækkefølge:
+Der foregår flere former for validering, i følgende rækkefølge:
 
-* XML well formedness
-* XML Schema validering ift officielle XSD filer
-* Schematron validering, mod .sch filer, som jeg har skrevet til at verificere andre officielle krav, primært fra featurekatalog docx.
+* lerxml parser XML, kaster evt fejl, hvis det ikke er wellformed
+* læser LER formatet fra schemaVersion (kan evt overrides, her antager vi '2.2.0')
+* kører et antal moduler, der hver gennemfører validering
+  * xsd.py, kører XSD evaluering med XSD filerne fra `xsd/2.2.0/`, evt fejl returneres med koden E1
+  * xta.py, kører validering af et custom XTA format, hvor man udtrykker assertions for hver enkelt XSD type.
+    Den leder rekursivt efter xta filer i mappen xta/2.2.0 og evaluerer dem alle. Hver assertion har sin egen kode, og message. XTA filerne
+    er organiseret i to mapper:
+    * `restr`, alle de officielle *restriktioner* som defineret i de officielle featurekatalog docx filer
+    * `andre_krav`, andre krav, herunder også krav, som jeg tror ikke officielt er dokumenteret, men som jeg har konstateret (fx. er xml-kommentarer ikke tilladt) 
+  * geometri.py, krav til geometri, som ikke let kunne udtrykkes i xsd eller xta
 
-## Repo struktur
+## Coverage
 
-Selve værktøjet ligger i src/lerxml. Denne Python-kode er relativt simpel. Det har været et større arbejde at skrive selve Schematron, især fordi jeg undervejs har forsøgt at holde det meget pænt og undgå alt for meget duplicate sch kode.
+Der er publiceret fire forskellige udgaver af LER-specifikationen. Hver af disse *publikationer*
+består af et antal XSD filer og en docx fil kaldt featurekatalog med *restriktioner*.
 
-Jeg bruger 
+Jeg har implementeret samtlige 301 restriktioner (dog er mange af dem identiske, og der er kun 76 unikke restriktioner).
 
-Den mest tidskrævende del har været at skrive de automatiserede tests. Bl.a.
-fordi jeg valgte at bruge XQuery Update Facility via xBase.
+Jeg har dog kun testet et lille antal, for v. 2.2.0, primært omkr Elledning og Føringsrør.
 
+```
+2.0.0               68
+2.0.1               75
+2.1.0               77
+2.2.0               81
+----------------------
+                   301
+```
 
-## Scripts
+## Hvorfor XTA?
 
-| Script | Type | Formål | Køres via | Bemærkninger |
-|---|---|---|---|---|
-| `scripts/build_schematron.py` | Python | Samler `sch:pattern`-fragmenter fra `src/lerxml/schematron/*.sch` til én samlet `2.2_ler.sch` | Manuelt: `python scripts/build_schematron.py` | Kræver at hver input-fil er en gyldig `sch:schema` med `queryBinding="xslt2"`. Fejler pt., da `Elledning.sch` mangler schema-wrapper. |
-| `scripts/export_xsd.py` | Python | Henter LER XSD-filerne fra ler.dk og gemmer dem lokalt i `src/lerxml/xsd/` | Manuelt, kun når XSD'erne skal opdateres | Bruger `xmlschema`-biblioteket. |
-| `scripts/update_vendor.py` | Python | Henter/opdaterer vendored tredjepartskode i `vendor/` iht. `vendor/vendor.toml` (schematron-schema, schematron-skeleton) | Manuelt | Kræver netværksadgang til GitHub. |
-| `scripts/pys.sh` | Bash | Fuld manuel valideringspipeline: resolver `sch:include`, validerer mod RNC/schematron.sch (jing/schxslt), validerer XML mod XSD (jing), validerer mod sch (pyschematron CLI), printer SVRL-opsummering | Manuelt, dev-only | Hardkodede personlige stier (`/home/thlw/a/schema/...`). Kræver `xsltproc`, `jing`, `schxslt`, `pyschematron` CLI og `s2y` installeret lokalt. |
-| `mut.py` (repo-rod) | Python | Kører mutation-tests: for hver mutation i `mut/*/*.yml` genererer den XML'en on-the-fly ved at sende XQuery Update Facility-udtrykket til en kørende `basex`-server, og validerer resultatet mod forventede XSD-/Schematron-fejlkoder | Automatisk via `nox -s mutations`/`nox -s report`, eller manuelt `python mut.py [--strict\|--report]` | Kræver en kørende `basexserver -p1984` (startes manuelt, kør én gang og lad den køre mens du arbejder — se nedenfor) samt en lokal `lerxml`-bruger med `CREATE`-rettighed (engangs-opsætning). Bruger `vendor/basexclient/BaseXClient.py` (BaseX's officielle Python-klient) til selve forbindelsen. Ligger bevidst i repo-roden, ikke i `scripts/`, da det er projektets primære test-entrypoint. |
+XML Schema er beregnet til at validere den grundlæggende struktur. Schematron er designet
+til at udtrykke den form for assertions, der ligger ud over XML Schema. Jeg forsøgte først
+at implementere alle kravene (både de officielle restriktioner og andre krav) som Schematron,
+men endte med at give op.
+
+Det var meget tungt/omstændigt at skrive, men det største problem var, at det var svært at
+skrive, så det havde en pæn/overskuelig struktur.
+
+Til sidst indførte jeg mit eget format, XTA, for *XML Schema Type-based assertions*, hvor
+man angiver assertions for hver XML Schema type.
+
+Formatet er yml, og meget simpelt at gennemskue/overskue.
+
+Største/eneste ulempe ved at have droppet Schematron er, at hvis det var lykkedes at skrive
+reglerne i Schematron, så kunne disse også evalueres i andre miljøer; altså det ville
+ikke være nødvendigt at installere noget Python-bibliotek, som i princippet kunne indeholde
+sikkerhedsproblemer eller bugs / problemer med vedligehold.
+
+## Automatiserede tests
+
+Jeg har kun skrevet tests til et fåtal af koderne. Jeg har struktuereret det således,
+at testmiljøet kun benytter et lille antal xml-filer. Hvor hver test laves der
+én eller flere manipulationer på denne XML, og så tjekkes, om man får de forventede koder.
+
+Disse manipulationer udtrykkes i XQuery Update Facility (XQUF), som dog desværre kun
+findes i én open source implementation, basex. BaseX er lavet i Java, og er tungt at
+starte op. Løsningen blev at man starter en lokal basex server, som løbende udfører
+XQUF arbejdet.
 
 ### Opsætning af basex-server (engangs + daglig)
 
@@ -46,12 +82,13 @@ Og når du er færdig:
 basexserver stop
 ```
 
-## Nox sessions
+### btest filer
 
-De fleste opgaver er almindelige scripts (se tabellen ovenfor). Nox bruges kun til de to opgaver, der reelt har brug for et isoleret Python-miljø for at installere og køre `lerxml`-pakken:
+Jeg har indført et yml format, som beskriver hvilken xml fil, der skal loades,
+hvordan dette dokument skal manipuleres, og hvilke validerings koder,
+det bør give. Det er en rekursiv struktur, og derfor er printout også formet
+som et træ.
 
-| Session | Formål |
-|---|---|
-| `nox -s mutations` | Kører `mut.py` i subset-mode (default) — fejler hvis forventede fejlkoder mangler. |
-| `nox -s report` | Samme som `mutations`, men kører i `--report`-mode: printer en fuld tabel og fejler aldrig. |
+### Kør btest.py
 
+For at køre tests, bare kør `python btest.py`.
