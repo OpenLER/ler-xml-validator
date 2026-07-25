@@ -24,8 +24,21 @@
 - text: Driftsstatussen må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
   expression: not($afterCutoff) or not(ler:driftsstatus/@xsi:nil = 'true')
 
+- text: |-
+    Driftsstatussen må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+    Note: m.a.o.: værdien for driftstatussen skal være angivet hvis etableringstidspunktet er efter skæringsdatoen, selvom denne attribut er deklareret som voidable.
+  expression: not($afterCutoff) or not(ler:driftsstatus/@xsi:nil = 'true')
+
 - text: Fareklassen må ikke være void hvis  etableringstidspunktet er efter skæringsdatoen.
   expression: not($afterCutoff) or not(ler:fareklasse/@xsi:nil = 'true')
+
+- text: |-
+    Fareklassen må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+    Note: m.a.o.: værdien for fareklassen skal være angivet hvis etableringstidspunktet er efter skæringsdatoen, selvom denne attribut er deklareret som voidable.
+  expression: not($afterCutoff) or not(ler:fareklasse/@xsi:nil = 'true')
+
+- text: Den udvendige diameter må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+  expression: not($afterCutoff) or not(ler:udvendigDiameter/@xsi:nil = 'true')
 
 - text: |-
     Geometrien skal være angivet hvis alle følgende betingelser er sande:
@@ -200,9 +213,44 @@
     )
     or not(ler:udvendigBredde/@xsi:nil = 'true')
 
+- text: Den udvendige bredde må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+  expression: not($afterCutoff) or not(ler:udvendigBredde/@xsi:nil = 'true')
+
+- text: |-
+    Den udvendige bredde skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen
+    * tværsnitsformen er ikke cirkulær.
+    Den udvendige bredde må ikke være angivet hvis tværsnitsformen er cirkulær.
+  sub_assertions:
+    - name: udvendigBreddeSkalAngives
+      message: "Den udvendige bredde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær."
+      expression: |-
+        not($afterCutoff and not($isCirkulaer))
+        or
+        (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = 'true') and normalize-space(ler:udvendigBredde) != '')
+    - name: udvendigBreddeMåIkkeAngives
+      message: "Den udvendige bredde må ikke være angivet hvis tværsnitsformen er cirkulær."
+      expression: not($isCirkulaer) or not(ler:udvendigBredde)
+
 - text: |-
     Den udvendige diameter skal være angivet hvis alle følgende betingelser er sande:
     * etableringstidspunktet er efter skæringsdatoen;
+    * tværsnitsformen er cirkulær.
+    Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær.
+  sub_assertions:
+    - name: udvendigDiameterSkalAngives
+      message: "Den udvendige diameter skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen er cirkulær."
+      expression: |-
+        not($afterCutoff and $isCirkulaer)
+        or
+        (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = 'true') and normalize-space(ler:udvendigDiameter) != '')
+    - name: udvendigDiameterMåIkkeAngives
+      message: "Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær."
+      expression: $isCirkulaer or not(ler:udvendigDiameter)
+
+- text: |-
+    Den udvendige diameter skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen
     * tværsnitsformen er cirkulær.
     Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær.
   sub_assertions:
@@ -232,6 +280,22 @@
       message: "Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær."
       expression: not($isCirkulaer) or not(ler:udvendigHoejde)
 
+- text: |-
+    Den udvendige højde skal være angivet hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen
+    * tværsnitsformen er ikke cirkulær.
+    Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær.
+  sub_assertions:
+    - name: udvendigHøjdeSkalAngives
+      message: "Den udvendige højde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær."
+      expression: |-
+        not($afterCutoff and not($isCirkulaer))
+        or
+        (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = 'true') and normalize-space(ler:udvendigHoejde) != '')
+    - name: udvendigHøjdeMåIkkeAngives
+      message: "Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær."
+      expression: not($isCirkulaer) or not(ler:udvendigHoejde)
+
 - text: Måleenheden for den udvendige højde skal være millimeter. Millimeter skal angives med symbolet mm [UCUM].
   expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
 
@@ -247,6 +311,9 @@
       and normalize-space(ler:driftsstatus) != 'under etablering'
     )
     or not(ler:udvendigHoejde/@xsi:nil = 'true')
+
+- text: Den udvendige højde må ikke være void hvis etableringstidspunktet er efter skæringsdatoen.
+  expression: not($afterCutoff) or not(ler:udvendigHoejde/@xsi:nil = 'true')
 
 - text: |-
     En vertikal koordinat i geometrien må ikke være ukendt-værdien på -99 hvis alle følgende betingelser er sande:
@@ -282,6 +349,37 @@
       and not(ler:vejledendeDybde/@xsi:nil = 'true')
       and normalize-space(ler:vejledendeDybde) != ''
     )
+
+- text: |-
+    Den vejledende dybde skal være angivet hvis alle følgende betingelser er sande:
+    * den primære forsyningsart er el eller telekommunikation
+    * etableringstidspunktet er efter skæringsdatoen
+    * de vertikale koordinater i geometrien er ukendt-værdien på -99
+  expression: |-
+    not(
+      $afterCutoff
+      and $verticalUnknown
+      and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')
+    )
+    or
+    (
+      ler:vejledendeDybde
+      and not(ler:vejledendeDybde/@xsi:nil = 'true')
+      and normalize-space(ler:vejledendeDybde) != ''
+    )
+
+- text: |-
+    En vertikal koordinat i geometrien må ikke være ukendt-værdien på -99 hvis alle følgende betingelser er sande:
+    * etableringstidspunktet er efter skæringsdatoen
+    * den primære forsyningsart er ikke el
+    * den primære forsyningsart er ikke telekommunikation
+  expression: |-
+    not(
+      $afterCutoff
+      and $primaryForsyningsart != 'el'
+      and $primaryForsyningsart != 'telekommunikation'
+    )
+    or not($verticalUnknown)
 
 - text: |-
     Den vejledende dybde må ikke være void hvis alle følgende betingelser er sande:

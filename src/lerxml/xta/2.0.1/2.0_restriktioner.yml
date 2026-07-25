@@ -75,6 +75,21 @@
     expression: "not($afterCutoff)\nor\n(\n  ler:udvendigDiameter\n  and not(ler:udvendigDiameter/@xsi:nil = 'true')\n  and normalize-space(ler:udvendigDiameter) != ''\n)"
   - name: vejledendeDybdeRestriktion
     expression: "not($afterCutoff and $verticalUnknown)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
+- xsdtype: ler:Foeringsroer
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  - name: primaryForsyningsart
+    expression: normalize-space(ler:forsyningsart[1])
+  assertions:
+  - name: geometriVertikaleKoordinaterRestriktion
+    expression: "not(\n  $afterCutoff\n  and $primaryForsyningsart != 'el'\n  and $primaryForsyningsart != 'telekommunikation'\n)\nor not($verticalUnknown)"
+  - name: vejledendeDybdeBetingelse
+    expression: "not(\n  $afterCutoff\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
 - xsdtype: ler:Gasledning
   variables:
   - name: zValues
@@ -185,6 +200,10 @@
   - name: ownRef
     expression: concat('#', @gml:id)
   assertions:
+  - name: driftsstatusVoidrestriktion
+    expression: not($afterCutoff) or not(ler:driftsstatus/@xsi:nil = 'true')
+  - name: fareklasseVoidrestriktion
+    expression: not($afterCutoff) or not(ler:fareklasse/@xsi:nil = 'true')
   - name: geometriBetingelse
     expression: 'exists(//ler:Ledningstrace/ler:indeholdtLedning[@xlink:href = $ownRef])
 
@@ -205,6 +224,8 @@
     expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
   - name: udvendigDiameterMåleenhedsrestriktion
     expression: not(ler:udvendigDiameter) or ler:udvendigDiameter/@uom = 'mm'
+  - name: udvendigDiameterVoidrestriktion
+    expression: not($afterCutoff) or not(ler:udvendigDiameter/@xsi:nil = 'true')
 - xsdtype: ler:LedningEllerLedningstrace
   variables:
   - name: etab
@@ -236,6 +257,15 @@
   - name: vejledendeDybdeMåleenhedsrestriktion
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
 - xsdtype: ler:Ledningstrace
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  - name: primaryForsyningsart
+    expression: normalize-space(ler:forsyningsart[1])
   assertions:
   - name: breddeMåleenhedsrestriktion
     expression: not(ler:bredde) or ler:bredde/@uom = 'mm'
@@ -245,6 +275,8 @@
     expression: boolean(ler:noejagtighedsklasse)
   - name: nøjagtighedsklasseVoidrestriktion
     expression: not($afterCutoff) or not(ler:noejagtighedsklasse/@xsi:nil = 'true')
+  - name: vejledendeDybdeBetingelse
+    expression: "not(\n  $afterCutoff\n  and $verticalUnknown\n  and ($primaryForsyningsart = 'el' or $primaryForsyningsart = 'telekommunikation')\n)\nor\n(\n  ler:vejledendeDybde\n  and not(ler:vejledendeDybde/@xsi:nil = 'true')\n  and normalize-space(ler:vejledendeDybde) != ''\n)"
 - xsdtype: ler:LinearAnnotation
   assertions:
   - name: geometryDataTypeConstraint
@@ -281,10 +313,50 @@
   - name: isCirkulaer
     expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
   assertions:
+  - name: udvendigBreddeBetingelse
+    sub_assertions:
+    - name: udvendigBreddeSkalAngives
+      message: Den udvendige bredde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær.
+      expression: 'not($afterCutoff and not($isCirkulaer))
+
+        or
+
+        (ler:udvendigBredde and not(ler:udvendigBredde/@xsi:nil = ''true'') and normalize-space(ler:udvendigBredde) != '''')'
+    - name: udvendigBreddeMåIkkeAngives
+      message: Den udvendige bredde må ikke være angivet hvis tværsnitsformen er cirkulær.
+      expression: not($isCirkulaer) or not(ler:udvendigBredde)
   - name: udvendigBreddeMåleenhedsrestriktion
     expression: not(ler:udvendigBredde) or ler:udvendigBredde/@uom = 'mm'
+  - name: udvendigBreddeVoidrestriktion
+    expression: not($afterCutoff) or not(ler:udvendigBredde/@xsi:nil = 'true')
+  - name: udvendigDiameterBetingelse
+    sub_assertions:
+    - name: udvendigDiameterSkalAngives
+      message: Den udvendige diameter skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen er cirkulær.
+      expression: 'not($afterCutoff and $isCirkulaer)
+
+        or
+
+        (ler:udvendigDiameter and not(ler:udvendigDiameter/@xsi:nil = ''true'') and normalize-space(ler:udvendigDiameter) != '''')'
+    - name: udvendigDiameterMåIkkeAngives
+      message: Den udvendige diameter må ikke være angivet hvis tværsnitsformen ikke er cirkulær.
+      expression: $isCirkulaer or not(ler:udvendigDiameter)
+  - name: udvendigHøjdeBetingelse
+    sub_assertions:
+    - name: udvendigHøjdeSkalAngives
+      message: Den udvendige højde skal være angivet hvis etableringstidspunktet er efter skæringsdatoen og tværsnitsformen ikke er cirkulær.
+      expression: 'not($afterCutoff and not($isCirkulaer))
+
+        or
+
+        (ler:udvendigHoejde and not(ler:udvendigHoejde/@xsi:nil = ''true'') and normalize-space(ler:udvendigHoejde) != '''')'
+    - name: udvendigHøjdeMåIkkeAngives
+      message: Den udvendige højde må ikke være angivet hvis tværsnitsformen er cirkulær.
+      expression: not($isCirkulaer) or not(ler:udvendigHoejde)
   - name: udvendigHøjdeMåleenhedsrestriktion
     expression: not(ler:udvendigHoejde) or ler:udvendigHoejde/@uom = 'mm'
+  - name: udvendigHøjdeVoidrestriktion
+    expression: not($afterCutoff) or not(ler:udvendigHoejde/@xsi:nil = 'true')
 - xsdtype: ler:Telekommunikationsledning
   variables:
   - name: zValues

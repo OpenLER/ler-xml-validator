@@ -285,6 +285,15 @@
   - name: vejledendeDybdeMåleenhedsrestriktion
     expression: not(ler:vejledendeDybde) or ler:vejledendeDybde/@uom = 'mm'
 - xsdtype: ler:Ledningstrace
+  variables:
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
+  - name: primaryForsyningsart
+    expression: normalize-space(ler:forsyningsart[1])
   assertions:
   - name: breddeMåleenhedsrestriktion
     expression: not(ler:bredde) or ler:bredde/@uom = 'mm'
