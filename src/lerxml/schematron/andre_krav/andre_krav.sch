@@ -14,4 +14,5 @@
 
   <include href="srsdimension_pos.sch"/>
   <include href="srsdimension_explicit.sch"/>
+  <include href="comments.sch"/>
 </schema>
