@@ -92,3 +92,21 @@ som et træ.
 ### Kør btest.py
 
 For at køre tests, bare kør `python btest.py`.
+
+## Q & A
+
+### Hvor kommer alle restriktionerne fra?
+
+LER.dk har for hver udgave (altså 2.0.0, 2.0.1, etc.) udgivet en ny docx-fil,
+der indeholder alle disse restriktioner (og en masse andet). Filen er tydeligvis
+maskingenereret, ud fra en eller anden masterfil. Et oplagt bud er en XMI-fil.
+Jeg har skrevet til LER og spurgt efter en sådan fil, men fik blot svar om,
+at de ikke havde en sådan fil, og henviste til XSD.
+
+Derfor har jeg bygget et værktøj, der kunne extracte data fra docx-filerne.
+Dette værktøj er en del af mit featurekatalog repo ([link](https://github.com/lerinfo/featurekatalog)).
+
+Restriktionerne kan kan findes i yaml-filer i mappen constraints ([link](https://github.com/lerinfo/featurekatalog/tree/main/constraints)).
+
+Den statiske hjemmeside viser også forskellige informationer omkr strukturen;
+denne information kommer fra XSD-filerne.
