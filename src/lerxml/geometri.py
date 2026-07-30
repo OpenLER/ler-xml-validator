@@ -10,7 +10,7 @@ from lxml.etree import _Element, _ElementTree
 from shapely.errors import ShapelyError
 from shapely.geometry import LineString as ShapelyLineString
 
-from . import ValidationError
+from . import Violation
 
 GML_NS = "http://www.opengis.net/gml/3.2"
 POS_LIST_TAG = f"{{{GML_NS}}}posList"
@@ -36,10 +36,10 @@ def _parse_points(elem: _Element) -> list[tuple[float, ...]] | None:
     return [tuple(values[i:i + dim]) for i in range(0, len(values), dim)]
 
 
-def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[ValidationError]:
+def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[Violation]:
     points = _parse_points(elem)
     if points is None:
-        yield ValidationError(
+        yield Violation(
             code="GEOM2",
             message="Antallet af tal i posList er ikke deleligt med srsDimension",
             location=doc.getpath(elem),
@@ -55,23 +55,23 @@ def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[ValidationErr
         return
 
     if not line.is_simple:
-        yield ValidationError(
+        yield Violation(
             code="GEOM1",
             message="Geometrien krydser/rører sig selv",
             location=doc.getpath(elem),
         )
 
 
-def validate(doc: _ElementTree) -> Iterator[ValidationError]:
+def validate(doc: _ElementTree) -> Iterator[Violation]:
     for elem in doc.iter(POS_LIST_TAG):
         yield from _check_pos_list(doc, elem)
 
 
-def validate_file(path: str | Path) -> Iterator[ValidationError]:
+def validate_file(path: str | Path) -> Iterator[Violation]:
     doc = etree.parse(str(path))
     yield from validate(doc)
 
 
-def validate_string(xml: str) -> Iterator[ValidationError]:
+def validate_string(xml: str) -> Iterator[Violation]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     yield from validate(doc)

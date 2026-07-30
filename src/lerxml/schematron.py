@@ -8,7 +8,7 @@ from lxml.etree import _ElementTree
 from pathlib import Path
 from pyschematron import validate_document
 
-from . import ValidationError
+from . import Violation
 
 ns = {"svrl": "http://purl.oclc.org/dsdl/svrl"}
 
@@ -19,22 +19,22 @@ sch_docs = [
 ]
 
 
-def validate(doc: _ElementTree) -> Iterator[ValidationError]:
+def validate(doc: _ElementTree) -> Iterator[Violation]:
     for sch_doc in sch_docs:
         result = validate_document(doc, sch_doc)
         svrl_doc = result.get_svrl()
 
         for failed in svrl_doc.findall(".//svrl:failed-assert", ns):
-            yield ValidationError(
+            yield Violation(
                 code=failed.get("id"),
                 message=failed.findtext("svrl:text", default="", namespaces=ns),
                 location=failed.get("location"),
             )
 
-def validate_file(path: str | Path) -> Iterator[ValidationError]:
+def validate_file(path: str | Path) -> Iterator[Violation]:
     doc = etree.parse(str(path))
     yield from validate(doc)
 
-def validate_string(xml: str) -> Iterator[ValidationError]:
+def validate_string(xml: str) -> Iterator[Violation]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     yield from validate(doc)

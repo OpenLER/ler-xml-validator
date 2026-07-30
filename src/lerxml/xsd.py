@@ -6,7 +6,7 @@ from importlib.resources import files
 from lxml import etree
 from lxml.etree import _ElementTree
 
-from . import ValidationError
+from . import Violation
 
 XSD_DIR = files("lerxml") / "xsd"
 
@@ -49,9 +49,9 @@ def get_schema(version: str = DEFAULT_VERSION) -> xmlschema.XMLSchema:
 schema = get_schema(DEFAULT_VERSION)
 
 
-def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
+def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
     for err in get_schema(version).iter_errors(doc):
-        yield ValidationError(
+        yield Violation(
             code="E1",
             message=err.reason,
             verbose_message=str(err),
@@ -59,10 +59,10 @@ def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Vali
             line=getattr(err, "position", (None, None))[0],
         )
 
-def validate_file(path: str | Path, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
+def validate_file(path: str | Path, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
     doc = etree.parse(str(path))
     yield from validate(doc, version)
 
-def validate_string(xml: str, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
+def validate_string(xml: str, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     yield from validate(doc, version)

@@ -19,7 +19,7 @@ Dækningen er ikke nødvendigvis 100% for ældre versioner — se
 `python build_xta.py` for status.
 
 Samme interface som xsd.py/schematron.py: validate(doc) / validate_file(path)
-/ validate_string(xml), alle giver ValidationError-objekter.
+/ validate_string(xml), alle giver Violation-objekter.
 """
 
 from collections.abc import Iterator
@@ -33,7 +33,7 @@ from elementpath.xpath2 import XPath2Parser
 from lxml import etree
 from lxml.etree import _ElementTree
 
-from . import ValidationError
+from . import Violation
 from .xsd import DEFAULT_VERSION, get_schema
 
 XTA_DIR = files("lerxml") / "xta"
@@ -174,7 +174,7 @@ def _evaluate(expr: str, node, root_node, variables: dict) -> object:
     return token.evaluate(ctx)
 
 
-def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
+def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
     cache = get_cache(version)
 
     # Building elementpath's node-tree wrapper is O(document size); doing it once
@@ -201,7 +201,7 @@ def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Vali
                     if not _evaluate(sub["expression"], elem, root_node, variables)
                 ]
                 if failed:
-                    yield ValidationError(
+                    yield Violation(
                         code=assertion["name"],
                         message="; ".join(sub["message"] for sub in failed),
                         location=doc.getpath(elem),
@@ -211,18 +211,18 @@ def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Vali
 
             ok = _evaluate(assertion["expression"], elem, root_node, variables)
             if not ok:
-                yield ValidationError(
+                yield Violation(
                     code=assertion["name"],
                     message=assertion["name"],
                     location=doc.getpath(elem),
                 )
 
 
-def validate_file(path: str | Path, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
+def validate_file(path: str | Path, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
     doc = etree.parse(str(path))
     yield from validate(doc, version)
 
 
-def validate_string(xml: str, version: str = DEFAULT_VERSION) -> Iterator[ValidationError]:
+def validate_string(xml: str, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     yield from validate(doc, version)

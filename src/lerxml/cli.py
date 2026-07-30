@@ -1,53 +1,42 @@
 from argparse import ArgumentParser
-from itertools import chain
 from pathlib import Path
 import sys
 
 from lxml import etree
 
 from . import geometri, schematron, xsd, xta
-from . import ValidationError
+from . import Violation, validate as validate_report
 
 
 def parse_xml(path: Path) -> etree._ElementTree:
     return etree.parse(str(path))
 
 
-def validate_all(path: Path, version: str = xsd.DEFAULT_VERSION):
-    doc = parse_xml(path)
+def print_violation(violation: Violation) -> None:
+    location = f" at {violation.location}" if violation.location else ""
+    line = f" line {violation.line}" if violation.line else ""
 
-    yield from xsd.validate(doc, version)
-    yield from xta.validate(doc, version)
-
-
-def print_error(error: ValidationError) -> None:
-    location = f" at {error.location}" if error.location else ""
-    line = f" line {error.line}" if error.line else ""
-
-    print(f"{error.code}: {error.message}{location}{line}")
+    print(f"{violation.code}: {violation.message}{location}{line}")
 
 
 def run_validate(path: Path, mode: str, version: str = xsd.DEFAULT_VERSION) -> int:
     doc = parse_xml(path)
 
     if mode == "xsd":
-        errors = list(xsd.validate(doc, version))
+        violations = list(xsd.validate(doc, version))
     elif mode == "schematron":
-        errors = list(schematron.validate(doc))
+        violations = list(schematron.validate(doc))
     elif mode == "xta":
-        errors = list(xta.validate(doc, version))
+        violations = list(xta.validate(doc, version))
     elif mode == "geometri":
-        errors = list(geometri.validate(doc))
+        violations = list(geometri.validate(doc))
     else:
-        errors = list(chain(
-            xsd.validate(doc, version),
-            xta.validate(doc, version),
-        ))
+        violations = validate_report(doc, version).violations
 
-    for error in errors:
-        print_error(error)
+    for violation in violations:
+        print_violation(violation)
 
-    return 1 if errors else 0
+    return 1 if violations else 0
 
 
 def main(argv: list[str] | None = None) -> int:
