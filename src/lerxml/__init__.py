@@ -1,3 +1,4 @@
+import subprocess
 from dataclasses import asdict, dataclass, field
 from importlib.metadata import PackageNotFoundError, version as _pkg_version
 from itertools import chain
@@ -19,10 +20,28 @@ class Violation:
     sub_codes: list[str] = field(default_factory=list)  # names of failed sub_assertions, if any
 
 
-try:
-    LERXML_VERSION = _pkg_version("lerxml")
-except PackageNotFoundError:
-    LERXML_VERSION = "0.0.0+unknown"
+def _detect_lerxml_version() -> str:
+    # No manual/CI process bumps pyproject.toml's version, so it's not trustworthy on
+    # its own (see adr/901). Prefer the actual git state of the checkout lerxml runs
+    # from - accurate even with uncommitted local changes - and only fall back to the
+    # static package version when there's no .git around (e.g. installed from a wheel).
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(Path(__file__).parent), "describe", "--always", "--dirty", "--broken"],
+            capture_output=True, text=True, timeout=2,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+    try:
+        return _pkg_version("lerxml")
+    except PackageNotFoundError:
+        return "unknown"
+
+
+LERXML_VERSION = _detect_lerxml_version()
 
 
 @dataclass

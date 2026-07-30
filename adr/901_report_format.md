@@ -62,8 +62,15 @@ class Report:
         ...
 ```
 
-`lerxml_version` udfyldes automatisk (`importlib.metadata.version("lerxml")`), så kaldere
-ikke selv skal slå det op. 
+`lerxml_version` udfyldes automatisk, så kaldere ikke selv skal slå det op.
+
+Den udfyldes ikke fra `pyproject.toml`s `version`-felt — der er ingen vane eller CI, der
+bumper den, så den ville bare stå og lyve `"0.1.0"` for evigt. I stedet køres `git describe
+--always --dirty --broken` mod checkout'et, lerxml selv kører fra: giver commit-hash'en
+(evt. `-dirty` hvis der er uncommittede ændringer), som rent faktisk afspejler den kode, der
+producerede rapporten. Falder tilbage til `importlib.metadata.version("lerxml")` hvis git
+ikke er tilgængeligt (fx et prod-image uden `.git`-mappe) — i så fald er værdien igen ikke
+til at stole på, men det er ikke et scenarie lerxml bruges i lige nu.
 
 ## Beslutning 4 - validate_file, validate_string og validate rettes til at returnere Report
 
