@@ -68,7 +68,7 @@ class Report:
 from . import geometri, schematron, xsd, xta  # noqa: E402
 
 
-def validate(doc: _ElementTree, version: str = xsd.DEFAULT_VERSION) -> Report:
+def validate(doc: _ElementTree, version: str) -> Report:
     violations = list(chain(
         xsd.validate(doc, version),
         xta.validate(doc, version),
@@ -77,11 +77,11 @@ def validate(doc: _ElementTree, version: str = xsd.DEFAULT_VERSION) -> Report:
     return Report(ler_version=version, lerxml_version=LERXML_VERSION, violations=violations)
 
 
-def validate_file(path: str | Path, version: str = xsd.DEFAULT_VERSION) -> Report:
+def validate_file(path: str | Path, version: str) -> Report:
     doc = etree.parse(str(path))
     return validate(doc, version)
 
 
-def validate_string(xml: str, version: str = xsd.DEFAULT_VERSION) -> Report:
+def validate_string(xml: str, version: str) -> Report:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     return validate(doc, version)

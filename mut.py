@@ -48,7 +48,7 @@ from lxml import etree
 sys.path.insert(0, str(Path(__file__).parent / "vendor" / "basexclient"))
 from BaseXClient import Session
 
-from lerxml.xsd import validate_string as xsd_validate_string
+from lerxml.xsd import LATEST_VERSION, validate_string as xsd_validate_string
 from lerxml.xta import validate_string as xta_validate_string
 
 DATA_DIR = Path(__file__).parent / "mut"
@@ -158,8 +158,8 @@ def run_mutations(filter_str: str | None = None) -> list[MutationResult]:
             try:
                 xml = generate_mutation(session, xml_path, xquery)
                 found = (
-                    {e.code for e in xsd_validate_string(xml)}
-                    | {e.code for e in xta_validate_string(xml)}
+                    {e.code for e in xsd_validate_string(xml, LATEST_VERSION)}
+                    | {e.code for e in xta_validate_string(xml, LATEST_VERSION)}
                 )
                 results.append(MutationResult(
                     test_id=test_id,

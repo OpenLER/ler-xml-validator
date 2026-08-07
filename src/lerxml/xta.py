@@ -34,7 +34,7 @@ from lxml import etree
 from lxml.etree import _ElementTree
 
 from . import Violation
-from .xsd import DEFAULT_VERSION, get_schema
+from .xsd import get_schema, warn_if_schema_version_mismatch
 
 XTA_DIR = files("lerxml") / "xta"
 
@@ -174,7 +174,8 @@ def _evaluate(expr: str, node, root_node, variables: dict) -> object:
     return token.evaluate(ctx)
 
 
-def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
+def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
+    warn_if_schema_version_mismatch(doc, version)
     cache = get_cache(version)
 
     # Building elementpath's node-tree wrapper is O(document size); doing it once
@@ -218,11 +219,11 @@ def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Viol
                 )
 
 
-def validate_file(path: str | Path, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
+def validate_file(path: str | Path, version: str) -> Iterator[Violation]:
     doc = etree.parse(str(path))
     yield from validate(doc, version)
 
 
-def validate_string(xml: str, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
+def validate_string(xml: str, version: str) -> Iterator[Violation]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     yield from validate(doc, version)

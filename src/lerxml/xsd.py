@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -35,7 +36,7 @@ EXTERNAL_LOCATIONS = [
 _schemas: dict[str, xmlschema.XMLSchema] = {}
 
 
-def get_schema(version: str = DEFAULT_VERSION) -> xmlschema.XMLSchema:
+def get_schema(version: str) -> xmlschema.XMLSchema:
     if version not in VERSIONS:
         raise ValueError(f"Unknown LER version {version!r}; known versions: {sorted(VERSIONS)}")
     if version not in _schemas:
@@ -49,7 +50,36 @@ def get_schema(version: str = DEFAULT_VERSION) -> xmlschema.XMLSchema:
 schema = get_schema(DEFAULT_VERSION)
 
 
-def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
+def resolve_schema_version(raw: str) -> str:
+    """Expand a bare X.Y schemaVersion attribute value to the X.Y.Z we validate against.
+
+    2.0 is a documented exception: 2.0.0 and 2.0.1 differ substantially, and
+    schemaVersion="2.0" always means 2.0.1 (see adr/903)."""
+    if raw == "2.0":
+        return "2.0.1"
+    if raw.count(".") == 1:
+        return f"{raw}.0"
+    return raw
+
+
+def warn_if_schema_version_mismatch(doc: _ElementTree, version: str) -> None:
+    """Warn when the root element's schemaVersion attribute (if present) disagrees
+    with the version being validated against. Fragments (e.g. a single feature)
+    have no schemaVersion attribute, so there is nothing to compare there."""
+    raw = doc.getroot().get("schemaVersion")
+    if raw is None:
+        return
+    doc_version = resolve_schema_version(raw)
+    if doc_version != version:
+        warnings.warn(
+            f"validating against LER version {version!r}, but document's schemaVersion "
+            f"attribute is {raw!r} (resolved: {doc_version!r})",
+            stacklevel=3,
+        )
+
+
+def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
+    warn_if_schema_version_mismatch(doc, version)
     for err in get_schema(version).iter_errors(doc):
         yield Violation(
             code="E1",
@@ -59,10 +89,10 @@ def validate(doc: _ElementTree, version: str = DEFAULT_VERSION) -> Iterator[Viol
             line=getattr(err, "position", (None, None))[0],
         )
 
-def validate_file(path: str | Path, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
+def validate_file(path: str | Path, version: str) -> Iterator[Violation]:
     doc = etree.parse(str(path))
     yield from validate(doc, version)
 
-def validate_string(xml: str, version: str = DEFAULT_VERSION) -> Iterator[Violation]:
+def validate_string(xml: str, version: str) -> Iterator[Violation]:
     doc = etree.ElementTree(etree.fromstring(xml.encode()))
     yield from validate(doc, version)

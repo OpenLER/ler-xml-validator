@@ -19,7 +19,7 @@ def print_violation(violation: Violation) -> None:
     print(f"{violation.code}: {violation.message}{location}{line}")
 
 
-def run_validate(path: Path, mode: str, version: str = xsd.DEFAULT_VERSION) -> int:
+def run_validate(path: Path, mode: str, version: str | None = None) -> int:
     doc = parse_xml(path)
 
     if mode == "xsd":
@@ -51,12 +51,12 @@ def main(argv: list[str] | None = None) -> int:
                 "--version", "-V",
                 dest="ler_version",
                 choices=sorted(xsd.VERSIONS),
-                default=xsd.DEFAULT_VERSION,
-                help=f"LER version to validate against (default: {xsd.DEFAULT_VERSION})",
+                required=True,
+                help="LER version to validate against",
             )
 
     args = parser.parse_args(argv)
-    version = getattr(args, "ler_version", xsd.DEFAULT_VERSION)
+    version = getattr(args, "ler_version", None)
 
     return run_validate(args.xml_file, args.command, version)
 

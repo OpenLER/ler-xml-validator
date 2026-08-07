@@ -225,11 +225,17 @@ def run_node(
 
 
 def run_tests(filter_str: str | None = None) -> list[FileResult]:
+    from functools import partial
+
     from lerxml.geometri import validate_string as geometri_validate_string
-    from lerxml.xsd import validate_string as xsd_validate_string
+    from lerxml.xsd import LATEST_VERSION, validate_string as xsd_validate_string
     from lerxml.xta import validate_string as xta_validate_string
 
-    validators = [xsd_validate_string, xta_validate_string, geometri_validate_string]
+    validators = [
+        partial(xsd_validate_string, version=LATEST_VERSION),
+        partial(xta_validate_string, version=LATEST_VERSION),
+        geometri_validate_string,
+    ]
 
     session = connect()
     try:
