@@ -22,6 +22,7 @@ Samme interface som xsd.py/schematron.py: validate(doc) / validate_file(path)
 / validate_string(xml), alle giver Violation-objekter.
 """
 
+import re
 from collections.abc import Iterator
 from functools import lru_cache
 from importlib.resources import files
@@ -125,6 +126,48 @@ def _check_xsdtypes_exist(variables_by_type: dict, assertions_by_type: dict, kno
         )
 
 
+def _referenced_variables(expr: str) -> set[str]:
+    """Names referenced via '$name' in an XPath expression, excluding ones bound locally
+    within the expression itself ('for $x in ...', 'some/every $x in ...', 'let $x := ...')
+    - those aren't looked up in our variables dict, XPath binds them from the 'in'/':=' clause.
+    XPath 2.0 only ever uses bare 'in'/':=' after a '$name' in these binding clauses, so this
+    holds without needing a real parse."""
+    bound = set(re.findall(r"\$(\w+)\s+in\b", expr)) | set(re.findall(r"\$(\w+)\s*:=", expr))
+    return set(re.findall(r"\$(\w+)", expr)) - bound
+
+
+def _check_variable_scope(elem_name: str, variables: list[dict], assertions: list[dict]) -> list[str]:
+    """Sanity check: every $variable referenced in a variable's own expression, or in an
+    assertion/sub_assertion expression, must already be defined at that point in the
+    element's variable chain (mest generel -> mest specifik) - otherwise _evaluate() crashes
+    with an ElementPathNameError at validation time instead of failing as a Violation.
+    Returns one description per problem found (empty if none)."""
+    problems: list[str] = []
+    available: set[str] = set()
+    for var in variables:
+        missing = _referenced_variables(var["expression"]) - available
+        if missing:
+            problems.append(
+                f"element '{elem_name}': variabel(-lerne) {sorted(missing)} bruges i variablen "
+                f"'{var['name']}', men er ikke defineret tidligere i arvekæden"
+            )
+        available.add(var["name"])
+
+    for assertion in assertions:
+        exprs = (
+            [(assertion["name"], assertion["expression"])] if "expression" in assertion
+            else [(f"{assertion['name']}.{sub['name']}", sub["expression"]) for sub in assertion["sub_assertions"]]
+        )
+        for label, expr in exprs:
+            missing = _referenced_variables(expr) - available
+            if missing:
+                problems.append(
+                    f"element '{elem_name}': variabel(-lerne) {sorted(missing)} bruges i assertion "
+                    f"'{label}', men er ikke defineret nogen steder i arvekæden"
+                )
+    return problems
+
+
 def _build_cache(version: str) -> dict[str, tuple[list[dict], list[dict]]]:
     """For hvert konkret element i den givne versions skema: (variabler mest-generel-først, assertions)."""
     variables_by_type, assertions_by_type = _load_by_xsdtype(version)
@@ -132,6 +175,7 @@ def _build_cache(version: str) -> dict[str, tuple[list[dict], list[dict]]]:
 
     cache: dict[str, tuple[list[dict], list[dict]]] = {}
     known_types: set[str] = set()
+    scope_problems: list[str] = []
 
     # xsd_schema.elements only covers the schema's own target namespace (ler:);
     # some feature types (LinearAnnotation, LinearDimension) live in imported
@@ -151,9 +195,16 @@ def _build_cache(version: str) -> dict[str, tuple[list[dict], list[dict]]]:
             assertions.extend(assertions_by_type.get(type_name, []))
 
         if assertions:
+            scope_problems.extend(_check_variable_scope(name, variables, assertions))
             cache[name] = (variables, assertions)
 
     _check_xsdtypes_exist(variables_by_type, assertions_by_type, known_types)
+
+    if scope_problems:
+        raise ValueError(
+            f"xta ({version}): {len(scope_problems)} udefineret-variabel-problem(er):\n"
+            + "\n".join(f"  - {p}" for p in scope_problems)
+        )
 
     return cache
 

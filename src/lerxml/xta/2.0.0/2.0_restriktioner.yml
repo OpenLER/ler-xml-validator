@@ -107,6 +107,9 @@
   - name: typeSupplerendeInfoBetingelse
     expression: normalize-space(ler:type) != 'ledningsoplysninger udleveres ikke' or ler:typeSupplerendeInfo
 - xsdtype: ler:Informationsressource
+  variables:
+  - name: geom
+    expression: ler:geometri/*
   assertions:
   - name: formatRestriktion
     expression: '(normalize-space(ler:format) = ''CSV'' and ler:format/@type = ''text/csv'')
@@ -289,6 +292,12 @@
   variables:
   - name: isCirkulaer
     expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: geometriVertikaleKoordinaterRestriktion
     expression: not($afterCutoff) or not($verticalUnknown)

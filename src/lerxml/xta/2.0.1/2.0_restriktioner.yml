@@ -126,6 +126,9 @@
   - name: typeSupplerendeInfoBetingelse
     expression: normalize-space(ler:type) != 'ledningsoplysninger udleveres ikke' or ler:typeSupplerendeInfo
 - xsdtype: ler:Informationsressource
+  variables:
+  - name: geom
+    expression: ler:geometri/*
   assertions:
   - name: formatRestriktion
     expression: '(normalize-space(ler:format) = ''CSV'' and ler:format/@type = ''text/csv'')
