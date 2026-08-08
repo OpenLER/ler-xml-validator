@@ -4,7 +4,7 @@ import sys
 
 from lxml import etree
 
-from . import geometri, schematron, xsd, xta
+from . import geometri, xsd, xta
 from . import Violation, validate as validate_report
 
 
@@ -24,8 +24,6 @@ def run_validate(path: Path, mode: str, version: str | None = None) -> int:
 
     if mode == "xsd":
         violations = list(xsd.validate(doc, version))
-    elif mode == "schematron":
-        violations = list(schematron.validate(doc))
     elif mode == "xta":
         violations = list(xta.validate(doc, version))
     elif mode == "geometri":
@@ -43,7 +41,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = ArgumentParser(prog="lerxml")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    for command in ["validate", "xsd", "schematron", "xta", "geometri"]:
+    for command in ["validate", "xsd", "xta", "geometri"]:
         subparser = subparsers.add_parser(command)
         subparser.add_argument("xml_file", type=Path)
         if command in ("validate", "xsd", "xta"):

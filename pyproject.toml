@@ -15,7 +15,6 @@ dependencies = [
     "lxml",
     "xmlschema",
     "pyyaml",
-    "pyschematron",
     "shapely",
 ]
 
