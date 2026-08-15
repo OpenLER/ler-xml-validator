@@ -65,7 +65,7 @@ class Report:
 
 # Imported after Violation/Report are defined: these submodules do `from . import
 # Violation` at import time, which requires the class to already exist in this module.
-from . import geometri, xsd, xta  # noqa: E402
+from . import geometri, xlink, xsd, xta  # noqa: E402
 
 
 def validate(doc: _ElementTree, version: str) -> Report:
@@ -73,6 +73,7 @@ def validate(doc: _ElementTree, version: str) -> Report:
         xsd.validate(doc, version),
         xta.validate(doc, version),
         geometri.validate(doc),
+        xlink.validate(doc),
     ))
     return Report(ler_version=version, lerxml_version=LERXML_VERSION, violations=violations)
 

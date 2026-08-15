@@ -14,6 +14,7 @@ Der foregår flere former for validering, i følgende rækkefølge:
     * `restr`, alle de officielle *restriktioner* som defineret i de officielle featurekatalog docx filer
     * `andre_krav`, andre krav, herunder også krav, som jeg tror ikke officielt er dokumenteret, men som jeg har konstateret (fx. er xml-kommentarer ikke tilladt) 
   * geometri.py, krav til geometri, som ikke let kunne udtrykkes i xsd eller xta
+  * xlink.py, tjekker at xmlns:xlink er deklareret i dokumentet - kode G4, se featurekatalog general_constraints G4
 
 ## Coverage
 
