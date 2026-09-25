@@ -2,8 +2,7 @@
 """
 btest.py — branch test runner for lerxml.
 
-An alternative to mut.py: instead of a flat list of independent mutations,
-each *.yml under btest/ (skipping archive/) describes a tree. The root
+Each *.yml under btest/ (skipping archive/) describes a tree. The root
 names one source XML file and may itself carry assertions (checked against
 the unmodified source). Each branch adds one incremental XQuery Update
 Facility modification on top of its parent, and may itself carry assertions
@@ -65,11 +64,17 @@ Usage:
   python btest.py -k driftsstatus_ukendt
 
 -k/--filter matches test paths (e.g. "restr/elledning_2022/driftsstatus_ukendt/
-forkert_dybde_enhed") by substring, the same way pytest's -k does and the same
-way mut.py's -k does.
+forkert_dybde_enhed") by substring, the same way pytest's -k does.
 
 Requires a basex server to be running first, e.g.:
   basexserver -p1984
+
+Requires a low-privilege basex user (one-time setup, run locally without a
+running server):
+  basex -c "CREATE USER lerxml lerxml"
+  basex -c "GRANT CREATE TO lerxml"
+CREATE is the lowest permission that allows running doc() and XQuery Update
+expressions against arbitrary files; ADMIN is not needed.
 """
 
 import argparse
@@ -80,17 +85,64 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
+from lxml import etree
 
-from mut import (
-    GREEN,
-    RED,
-    YELLOW,
-    colorize,
-    connect,
-    generate_mutation,
-)
+sys.path.insert(0, str(Path(__file__).parent / "vendor" / "basexclient"))
+from BaseXClient import Session
 
 BTEST_DIR = Path(__file__).parent / "btest"
+
+BASEX_HOST = "localhost"
+BASEX_PORT = 1984
+BASEX_USER = "lerxml"
+BASEX_PASSWORD = "lerxml"
+
+RED    = "\033[31m"
+GREEN  = "\033[32m"
+YELLOW = "\033[33m"
+RESET  = "\033[0m"
+
+
+def colorize(text: str, color: str) -> str:
+    return f"{color}{text}{RESET}"
+
+
+def connect() -> Session:
+    try:
+        return Session(BASEX_HOST, BASEX_PORT, BASEX_USER, BASEX_PASSWORD)
+    except OSError as e:
+        print(
+            f"ERROR: Could not connect to a basex server at "
+            f"{BASEX_HOST}:{BASEX_PORT} ({e}).\n"
+            f"Start one first, e.g.: basexserver -p{BASEX_PORT}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def generate_mutation(session: Session, xml_path: Path, xquery: str) -> str:
+    """Run an XQuery Update Facility expression against xml_path via a
+    running basex server and return the resulting XML as a string."""
+    root = etree.parse(str(xml_path)).getroot()
+    ns_decls = "".join(
+        f"declare namespace {prefix}='{uri}';\n"
+        for prefix, uri in root.nsmap.items()
+        if prefix is not None
+    )
+    abs_xml = str(xml_path.resolve()).replace("'", "\\'")
+
+    if xquery in (None, "", "()"):
+        query = ns_decls + f"doc('{abs_xml}')"
+    else:
+        mutation = xquery.replace("$doc", "$d")
+        query = (
+            ns_decls
+            + f"let $doc := doc('{abs_xml}')\n"
+            + f"let $result := copy $d := $doc modify ({mutation}) return $d\n"
+            + "return $result"
+        )
+
+    return session.query(query).execute()
 
 # Feature type templates dir: where shared source XML files live, referenced
 # from source: fields as "$FT/...". Defaults to btest/ft/ when $FT isn't set.
