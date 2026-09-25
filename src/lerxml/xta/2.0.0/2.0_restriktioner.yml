@@ -25,6 +25,8 @@
     expression: "not(\n  normalize-space(ler:forsyningsart)\n  = ('afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand')\n)"
 - xsdtype: ler:AndenLedning
   variables:
+  - name: isCirkulaer
+    expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
   - name: zValues
     expression: 'for $pl in ler:geometri//gml:posList
 

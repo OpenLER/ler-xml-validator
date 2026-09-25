@@ -349,6 +349,12 @@
   variables:
   - name: isCirkulaer
     expression: normalize-space(ler:tvaersnitsform) = 'cirkulær'
+  - name: zValues
+    expression: 'for $pl in ler:geometri//gml:posList
+
+      return tokenize(normalize-space($pl), ''\s+'')[position() mod 3 = 0]'
+  - name: verticalUnknown
+    expression: exists($zValues) and (every $z in $zValues satisfies $z = '-99')
   assertions:
   - name: udvendigBreddeBetingelse
     sub_assertions: *id002

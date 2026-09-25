@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-build_xta.py — generate per-version xta rule files from featurekatalog's
-constraints/{version}/*.yml (natural-language restriction text) plus a
-hand-maintained text->XPath dictionary (xta/human_to_xpath.yml).
+build_xta.py — generate per-version xta rule files from the restrictions in
+featurekatalog's fkdump/{version}/*.yml (natural-language restriction text) plus
+a hand-maintained text->XPath dictionary (xta/human_to_xpath.yml).
 
 For every restriction whose exact text is found in the dictionary, emits the
 matching XPath into src/lerxml/xta/{version}/{major.minor}_restriktioner.yml.
@@ -82,23 +82,23 @@ def build_version(
     variables_by_type: dict[str, list[dict]],
 ) -> tuple[list[dict], list[tuple[str, str, str, str]]]:
     """Return (xta rule blocks, gaps). gaps = [(version, feature_type, assertion_name, text)]."""
-    constraints_dir = featurekatalog / "constraints" / version
+    fkdump_dir = featurekatalog / "fkdump" / version
     blocks = []
     gaps = []
 
-    for yml_path in sorted(constraints_dir.glob("*.yml")):
-        feature_type = yml_path.stem
+    for yml_path in sorted(fkdump_dir.glob("*.yml")):
+        featuretype = yaml.safe_load(yml_path.read_text())
+        feature_type = featuretype["navn"]
         xsdtype = f"ler:{to_ascii(feature_type)}"
 
-        entries = yaml.safe_load(yml_path.read_text()) or []
         assertions = []
-        for entry in entries:
-            text = normalize(entry["expression"])
+        for restriktion in featuretype["restriktioner"]:
+            text = normalize(restriktion["Udtryk"])
             looked_up = dictionary.get(text)
             if looked_up is None:
-                gaps.append((version, feature_type, entry["name"], text))
+                gaps.append((version, feature_type, restriktion["Navn"], text))
                 continue
-            assertions.append({"name": entry["name"], **looked_up})
+            assertions.append({"name": restriktion["Navn"], **looked_up})
 
         if not assertions:
             continue
@@ -142,8 +142,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if not (args.featurekatalog / "constraints").is_dir():
-        print(f"Finder ikke {args.featurekatalog / 'constraints'}", file=sys.stderr)
+    if not (args.featurekatalog / "fkdump").is_dir():
+        print(f"Finder ikke {args.featurekatalog / 'fkdump'}", file=sys.stderr)
         sys.exit(2)
 
     dictionary = load_dictionary()
