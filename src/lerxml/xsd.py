@@ -45,11 +45,6 @@ def get_schema(version: str) -> xmlschema.XMLSchema:
     return _schemas[version]
 
 
-# Backward-compat module-level singleton: xta.py's rule set is only written
-# against 2.2.0's schema so far, and imports this directly.
-schema = get_schema(DEFAULT_VERSION)
-
-
 def resolve_schema_version(raw: str) -> str:
     """Expand a bare X.Y schemaVersion attribute value to the X.Y.Z we validate against.
 

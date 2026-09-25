@@ -1,20 +1,50 @@
 # ler-xml-validator
 
-Et python library og cli værktøj til at validere den LER XML (LER 2.2).
+Tjekker, om en XML-fil vil blive accepteret af LER, før den sendes.
+Python-bibliotek og CLI (`lerxml`). Understøtter LER 2.0.0, 2.0.1, 2.1.0 og 2.2.0.
 
-Der foregår flere former for validering, i følgende rækkefølge:
+## Brug
 
-* lerxml parser XML, kaster evt fejl, hvis det ikke er wellformed
-* læser LER formatet fra schemaVersion (kan evt overrides, her antager vi '2.2.0')
-* kører et antal moduler, der hver gennemfører validering
-  * xsd.py, kører XSD evaluering med XSD filerne fra `xsd/2.2.0/`, evt fejl returneres med koden E1
-  * xta.py, kører validering af et custom XTA format, hvor man udtrykker assertions for hver enkelt XSD type.
-    Den leder rekursivt efter xta filer i mappen xta/2.2.0 og evaluerer dem alle. Hver assertion har sin egen kode, og message. XTA filerne
-    er organiseret i to mapper:
-    * `restr`, alle de officielle *restriktioner* som defineret i de officielle featurekatalog docx filer
-    * `andre_krav`, andre krav, herunder også krav, som jeg tror ikke officielt er dokumenteret, men som jeg har konstateret (fx. er xml-kommentarer ikke tilladt) 
-  * geometri.py, krav til geometri, som ikke let kunne udtrykkes i xsd eller xta
-  * xlink.py, tjekker at xmlns:xlink er deklareret i dokumentet - kode G4, se featurekatalog general_constraints G4
+```bash
+pip install -e .
+lerxml validate --version 2.2.0 example_xml/elledning_2024.xml
+```
+
+```
+nøjagtighedsklasseBetingelse: nøjagtighedsklasseBetingelse at /ler:Elledning
+nøjagtighedsklasseVertikalBetingelse: nøjagtighedsklasseVertikalBetingelse at /ler:Elledning
+G4: xmlns:xlink er ikke deklareret i dokumentet at /ler:Elledning
+```
+
+Hver fejl skrives på én linje med fejlkode, besked og placering. Exit code er
+0, hvis filen er gyldig, og 1, hvis der er fejl. Kommandoerne `xsd`, `xta` og
+`geometri` kører kun ét af tjekkene.
+
+Fra Python:
+
+```python
+from lxml import etree
+import lerxml
+
+report = lerxml.validate(etree.parse("fil.xml"), "2.2.0")
+report.valid       # True/False
+report.violations  # liste af Violation(code, message, location, line, ...)
+```
+
+Versionen skal altid angives. Hvis dokumentets `schemaVersion` ikke passer
+med den angivne version, gives en advarsel.
+
+## Hvad bliver tjekket?
+
+| Modul | Tjekker | Fejlkoder |
+|---|---|---|
+| `xsd.py` | XML Schema for den valgte version | `E1` |
+| `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn |
+| `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `GEOM1`, `GEOM2` |
+| `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i featurekatalog) |
+
+G1–G4 er beskrevet under "Andre krav" i featurekatalog. G3 (XML-kommentarer)
+er endnu ikke implementeret.
 
 ## Coverage
 
