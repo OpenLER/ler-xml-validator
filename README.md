@@ -34,6 +34,31 @@ Jeg har dog kun testet et lille antal, for v. 2.2.0, primært omkr Elledning og 
                    301
 ```
 
+## Hvorfor en separat validator?
+
+OpenLER har to projekter, der begge handler om gyldig LER-XML:
+
+- **[lermodel](https://github.com/OpenLER/lermodel)** er LERs datamodel i Python.
+  Den validerer data og bygger XML ud fra dem.
+- **ler-xml-validator** (dette repo) validerer den færdige XML, uanset hvordan
+  den er lavet.
+
+Man kunne spørge, hvorfor valideringen ikke bare ligger i lermodel.
+
+Det var svært og uoverskueligt at skrive lermodel korrekt. Så jeg skrev
+først validatoren og brugte den til at skrive unit tests til lermodel.
+Validatoren er altså facit, og lermodel bliver testet op imod den.
+
+Jeg havde også oplevet, at LER-serveren afviste XML af grunde, der ikke var
+dokumenteret som krav, og at fejlbeskederne var uhjælpsomme eller misvisende.
+For eksempel accepterede LER-serveren tidligere (måske helt tilbage i 2023)
+ikke XML-kommentarer, og fejlbeskeden sagde ikke hvorfor. Jeg tror, LER er
+blevet meget bedre siden. Der var brug for en bedre test af XML med bedre
+feedback, for at jeg kunne bygge en robust lermodel.
+
+Fordi validatoren kun ser på den færdige XML, kan den også bruges af alle
+andre, der sender XML til LER, uanset om de bruger lermodel eller ej.
+
 ## Hvorfor XTA?
 
 XML Schema er beregnet til at validere den grundlæggende struktur. Schematron er designet
@@ -53,6 +78,10 @@ Største/eneste ulempe ved at have droppet Schematron er, at hvis det var lykked
 reglerne i Schematron, så kunne disse også evalueres i andre miljøer; altså det ville
 ikke være nødvendigt at installere noget Python-bibliotek, som i princippet kunne indeholde
 sikkerhedsproblemer eller bugs / problemer med vedligehold.
+
+Til gengæld er XTA så simpelt, at det burde være muligt for andre at skrive
+deres egen XTA-validator rimeligt let. Med AI er det måske hurtigere end at
+sætte en Schematron-validator korrekt op.
 
 ## Automatiserede tests
 
@@ -98,19 +127,10 @@ For at køre tests, bare kør `python btest.py`.
 
 ### Hvor kommer alle restriktionerne fra?
 
-LER.dk har for hver udgave (altså 2.0.0, 2.0.1, etc.) udgivet en ny docx-fil,
-der indeholder alle disse restriktioner (og en masse andet). Filen er tydeligvis
-maskingenereret, ud fra en eller anden masterfil. Et oplagt bud er en XMI-fil.
-Jeg har skrevet til LER og spurgt efter en sådan fil, men fik blot svar om,
-at de ikke havde en sådan fil, og henviste til XSD.
-
-Derfor har jeg bygget et værktøj, der kunne extracte data fra docx-filerne.
-Dette værktøj er en del af mit featurekatalog repo ([link](https://github.com/OpenLER/featurekatalog)).
-
-Restriktionerne kan kan findes i yaml-filer i mappen constraints ([link](https://github.com/OpenLER/featurekatalog/tree/main/constraints)).
-
-Den statiske hjemmeside viser også forskellige informationer omkr strukturen;
-denne information kommer fra XSD-filerne.
+LER har for hver udgave (2.0.0, 2.0.1 osv.) udgivet en docx-fil med alle
+restriktionerne. Mit repo [featurekatalog](https://github.com/OpenLER/featurekatalog)
+parser dem ud af docx-filerne (se [hvorfor docx og ikke en kildefil](https://github.com/OpenLER/featurekatalog#hvorfor-parse-docx-og-ikke-en-kildefil))
+og gemmer dem som YAML i mappen [constraints](https://github.com/OpenLER/featurekatalog/tree/main/constraints).
 
 ### Hvad gør build_xta.py?
 
