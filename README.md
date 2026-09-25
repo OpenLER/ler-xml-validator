@@ -130,14 +130,22 @@ For at køre tests, bare kør `python btest.py`.
 LER har for hver udgave (2.0.0, 2.0.1 osv.) udgivet en docx-fil med alle
 restriktionerne. Mit repo [featurekatalog](https://github.com/OpenLER/featurekatalog)
 parser dem ud af docx-filerne (se [hvorfor docx og ikke en kildefil](https://github.com/OpenLER/featurekatalog#hvorfor-parse-docx-og-ikke-en-kildefil))
-og gemmer dem som YAML i mappen [constraints](https://github.com/OpenLER/featurekatalog/tree/main/constraints).
+og gemmer dem i [fkdump](https://github.com/OpenLER/featurekatalog/tree/main/fkdump), én YAML-fil pr. featuretype pr. version.
 
 ### Hvad gør build_xta.py?
 
 Den bruges alene til at opdatere filer, der allerede er committed til repo. Så med mindre du udvikler/debugger på dette repo, så er der ingen grund til at køre den. 
 
-Scriptet itererer over alle restriktionerne i yml filer i $FEATUREKATALOG_DIR/constraints/<version>,
-og så laver den tilsvarende xta filer, fx src/xta/2.2.0/2.2_restriktioner.yml.
+Scriptet itererer over alle restriktionerne i `$FEATUREKATALOG_DIR/fkdump/<version>/*.yml`
+og laver de tilsvarende XTA-filer, f.eks. `src/lerxml/xta/2.2.0/2.2_restriktioner.yml`.
+
+De genererede XTA-filer må ikke rettes i hånden. Det manuelle arbejde ligger i
+de to input-filer:
+
+* `xta/human_to_xpath.yml`: oversætter hver restriktionstekst til XPath
+* `xta/variabler.yml`: hjælpevariabler pr. XSD-type, som udtrykkene bruger
+
+Efter en ændring i dem køres `build_xta.py`, og både input og output committes.
 
 Den kigger på restriktionens tekst (human text) og slår det op i human_to_xpath.yml. Rigtigt mange
 restriktioner har præcist samme restriktionstekst, og med denne lookup løsning, så

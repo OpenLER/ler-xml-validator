@@ -13,8 +13,8 @@ types variabel-udtryk kan referere til variabler defineret længere oppe i
 kæden (ligesom <let> i schematron.py's .sch-filer, via <extends>).
 
 Regelfilerne pr. version bygges af build_xta.py (se repo-roden) ud fra
-featurekatalog/constraints/{version}/*.yml (den officielle, natursprogede
-kilde) plus xta/human_to_xpath.yml (den håndholdte tekst->XPath-ordbog).
+restriktionerne i featurekatalog/fkdump/{version}/*.yml (den officielle,
+natursprogede kilde) plus xta/human_to_xpath.yml (den håndholdte tekst->XPath-ordbog).
 Dækningen er ikke nødvendigvis 100% for ældre versioner — se
 `python build_xta.py` for status.
 
