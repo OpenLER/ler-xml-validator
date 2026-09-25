@@ -41,9 +41,9 @@ med den angivne version, gives en advarsel.
 | `xsd.py` | XML Schema for den valgte version | `E1` |
 | `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn |
 | `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `GEOM1`, `GEOM2` |
-| `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i featurekatalog) |
+| `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i LER-bogen) |
 
-G1–G4 er beskrevet under "Andre krav" i featurekatalog. G3 (XML-kommentarer)
+G1–G4 er beskrevet under "Andre krav" i [LER-bogen](https://openler.github.io/lerbogen/). G3 (XML-kommentarer)
 er endnu ikke implementeret.
 
 ## Coverage
@@ -158,15 +158,15 @@ For at køre tests, bare kør `python btest.py`.
 ### Hvor kommer alle restriktionerne fra?
 
 LER har for hver udgave (2.0.0, 2.0.1 osv.) udgivet en docx-fil med alle
-restriktionerne. Mit repo [featurekatalog](https://github.com/OpenLER/featurekatalog)
-parser dem ud af docx-filerne (se [hvorfor docx og ikke en kildefil](https://github.com/OpenLER/featurekatalog#hvorfor-parse-docx-og-ikke-en-kildefil))
-og gemmer dem i [fkdump](https://github.com/OpenLER/featurekatalog/tree/main/fkdump), én YAML-fil pr. featuretype pr. version.
+restriktionerne. Mit repo [lerbogen](https://github.com/OpenLER/lerbogen)
+parser dem ud af docx-filerne (se [hvorfor docx og ikke en kildefil](https://github.com/OpenLER/lerbogen#hvorfor-parse-docx-og-ikke-en-kildefil))
+og gemmer dem i [fkdump](https://github.com/OpenLER/lerbogen/tree/main/fkdump), én YAML-fil pr. featuretype pr. version.
 
 ### Hvad gør build_xta.py?
 
 Den bruges alene til at opdatere filer, der allerede er committed til repo. Så med mindre du udvikler/debugger på dette repo, så er der ingen grund til at køre den. 
 
-Scriptet itererer over alle restriktionerne i `$FEATUREKATALOG_DIR/fkdump/<version>/*.yml`
+Scriptet itererer over alle restriktionerne i `$LERBOGEN_DIR/fkdump/<version>/*.yml`
 og laver de tilsvarende XTA-filer, f.eks. `src/lerxml/xta/2.2.0/2.2_restriktioner.yml`.
 
 De genererede XTA-filer må ikke rettes i hånden. Det manuelle arbejde ligger i

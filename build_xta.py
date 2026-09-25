@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 build_xta.py — generate per-version xta rule files from the restrictions in
-featurekatalog's fkdump/{version}/*.yml (natural-language restriction text) plus
+lerbogen's fkdump/{version}/*.yml (natural-language restriction text) plus
 a hand-maintained text->XPath dictionary (xta/human_to_xpath.yml).
 
 For every restriction whose exact text is found in the dictionary, emits the
@@ -10,12 +10,12 @@ Restrictions whose text isn't found yet are reported as gaps (not silently
 skipped) — the script exits non-zero if there are any, listing exactly what's
 missing so the dictionary can be extended.
 
-Expects the featurekatalog repo cloned as a sibling directory (../featurekatalog)
-by default; override with $FEATUREKATALOG_DIR or --featurekatalog.
+Expects the lerbogen repo cloned as a sibling directory (../lerbogen)
+by default; override with $LERBOGEN_DIR or --lerbogen.
 
 Usage:
   python build_xta.py
-  python build_xta.py --featurekatalog ~/other/path/to/featurekatalog
+  python build_xta.py --lerbogen ~/other/path/to/lerbogen
 """
 
 import argparse
@@ -31,10 +31,10 @@ OUT_DIR = XTA_DIR
 DICTIONARY_PATH = REPO_ROOT / "xta" / "human_to_xpath.yml"
 VARIABLES_PATH = REPO_ROOT / "xta" / "variabler.yml"
 
-# Expects featurekatalog cloned as a sibling directory to this repo by default
-# (../featurekatalog); override with FEATUREKATALOG_DIR or --featurekatalog.
-DEFAULT_FEATUREKATALOG = Path(
-    os.environ.get("FEATUREKATALOG_DIR", REPO_ROOT.parent / "featurekatalog")
+# Expects lerbogen cloned as a sibling directory to this repo by default
+# (../lerbogen); override with LERBOGEN_DIR or --lerbogen.
+DEFAULT_LERBOGEN = Path(
+    os.environ.get("LERBOGEN_DIR", REPO_ROOT.parent / "lerbogen")
 ).expanduser()
 
 VERSIONS = ["2.0.0", "2.0.1", "2.1.0", "2.2.0"]
@@ -77,12 +77,12 @@ def load_variables() -> dict[str, list[dict]]:
 
 def build_version(
     version: str,
-    featurekatalog: Path,
+    lerbogen: Path,
     dictionary: dict[str, dict],
     variables_by_type: dict[str, list[dict]],
 ) -> tuple[list[dict], list[tuple[str, str, str, str]]]:
     """Return (xta rule blocks, gaps). gaps = [(version, feature_type, assertion_name, text)]."""
-    fkdump_dir = featurekatalog / "fkdump" / version
+    fkdump_dir = lerbogen / "fkdump" / version
     blocks = []
     gaps = []
 
@@ -132,8 +132,8 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--featurekatalog", type=Path, default=DEFAULT_FEATUREKATALOG,
-        help="Path to the featurekatalog repo (default: ../featurekatalog, or $FEATUREKATALOG_DIR if set)",
+        "--lerbogen", type=Path, default=DEFAULT_LERBOGEN,
+        help="Path to the lerbogen repo (default: ../lerbogen, or $LERBOGEN_DIR if set)",
     )
     parser.add_argument(
         "-v", "--verbose",
@@ -142,8 +142,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if not (args.featurekatalog / "fkdump").is_dir():
-        print(f"Finder ikke {args.featurekatalog / 'fkdump'}", file=sys.stderr)
+    if not (args.lerbogen / "fkdump").is_dir():
+        print(f"Finder ikke {args.lerbogen / 'fkdump'}", file=sys.stderr)
         sys.exit(2)
 
     dictionary = load_dictionary()
@@ -152,7 +152,7 @@ def main() -> None:
     all_gaps: list[tuple[str, str, str, str]] = []
     rows: list[tuple[str, int, int]] = []  # (version, total, translated)
     for version in VERSIONS:
-        blocks, gaps = build_version(version, args.featurekatalog, dictionary, variables_by_type)
+        blocks, gaps = build_version(version, args.lerbogen, dictionary, variables_by_type)
         all_gaps.extend(gaps)
 
         out_dir = OUT_DIR / version

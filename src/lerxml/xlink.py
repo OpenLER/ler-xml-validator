@@ -1,7 +1,7 @@
 """
 Tjekker at xmlns:xlink er deklareret i dokumentet, selvom prefixet ikke bruges.
 
-Se featurekatalog general_constraints G4 for baggrund, og
+Se LER-bogen, "Andre krav", G4 for baggrund, og
 xlink_namespace_problem.md i dette repo for reproduktion.
 """
 
@@ -22,7 +22,7 @@ def validate(doc: _ElementTree) -> Iterator[Violation]:
     yield Violation(
         code="G4",
         message="xmlns:xlink er ikke deklareret i dokumentet",
-        verbose_message="Se featurekatalog general_constraints G4.",
+        verbose_message="Se LER-bogen, 'Andre krav', G4.",
         location=doc.getpath(doc.getroot()),
     )
 

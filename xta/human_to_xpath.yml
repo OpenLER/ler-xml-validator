@@ -1,4 +1,4 @@
-# Ordbog: menneskelig restriktionstekst (fra featurekatalog/constraints/{version}/*.yml's
+# Ordbog: menneskelig restriktionstekst (fra lerbogen/fkdump/{version}/*.yml's
 # "expression"-felt) -> XPath-udtryk. build_xta.py slår hver restriktions tekst op her
 # for at generere src/lerxml/xta/{version}/{major.minor}_restriktioner.yml automatisk.
 #
