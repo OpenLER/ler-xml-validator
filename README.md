@@ -149,6 +149,10 @@ hvordan dette dokument skal manipuleres, og hvilke validerings koder,
 det bør give. Det er en rekursiv struktur, og derfor er printout også formet
 som et træ. `b` står for branches.
 
+Restriktionstests ligger i `btest/restr/<featuretype>/<restriktion>.yml`. Restriktioner
+på abstrakte typer (fx `Ledning`) testes gennem en konkret undertype (fx `Elledning`),
+da LERs XSD kun nedarver fra abstrakte typer.
+
 ### Kør btest.py
 
 For at køre tests, bare kør `python btest.py`.
