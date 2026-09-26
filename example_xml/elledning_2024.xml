@@ -8,7 +8,7 @@
   <ler:driftsstatus>i drift</ler:driftsstatus>
   <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
   <ler:fareklasse>ikke farlig</ler:fareklasse>
-  <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
+  <ler:noejagtighedsklasse xsi:nil="true" nilReason="unknown"/>
 
   <ler:geometri >
     <gml:LineString srsName="EPSG:25832">

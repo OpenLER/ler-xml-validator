@@ -7,18 +7,36 @@ Python-bibliotek og CLI (`lerxml`). Understøtter LER 2.0.0, 2.0.1, 2.1.0 og 2.2
 
 ```bash
 pip install -e .
-lerxml validate --version 2.2.0 example_xml/elledning_2024.xml
 ```
 
-```
-nøjagtighedsklasseBetingelse: nøjagtighedsklasseBetingelse at /ler:Elledning
-nøjagtighedsklasseVertikalBetingelse: nøjagtighedsklasseVertikalBetingelse at /ler:Elledning
-G4: xmlns:xlink er ikke deklareret i dokumentet at /ler:Elledning
+De to eksempelfiler er ens, bortset fra etableringstidspunktet (2022 og 2024), og
+begge har `noejagtighedsklasse` sat til nil:
+
+```console
+$ lerxml validate --version 2.1.0 example_xml/elledning_2022.xml
+$ echo $?
+0
+
+$ lerxml validate --version 2.1.0 example_xml/elledning_2024.xml
+nøjagtighedsklasseVoidrestriktion: nøjagtighedsklasseVoidrestriktion at /ler:Elledning
+$ echo $?
+1
 ```
 
 Hver fejl skrives på én linje med fejlkode, besked og placering. Exit code er
 0, hvis filen er gyldig, og 1, hvis der er fejl. Kommandoerne `xsd`, `xta` og
 `geometri` kører kun ét af tjekkene.
+
+Resultatet afhænger af, hvilken LER-version der valideres efter:
+
+| | 2.0.0 | 2.0.1 | 2.1.0 | 2.2.0 |
+|---|---|---|---|---|
+| `elledning_2022.xml` | gyldig | gyldig | gyldig | `nøjagtighedsklasseVertikalBetingelse` |
+| `elledning_2024.xml` | `nøjagtighedsklasseVoidrestriktion` | `nøjagtighedsklasseVoidrestriktion` | `nøjagtighedsklasseVoidrestriktion` | `nøjagtighedsklasseVertikalBetingelse`, `nøjagtighedsklasseVoidrestriktion` |
+
+Nøjagtighedsklassen må ikke være nil, hvis etableringstidspunktet ligger efter
+skæringsdatoen (2023-07-01). I 2.2.0 kom `noejagtighedsklasseVertikal` til, og
+den mangler i begge filer.
 
 Fra Python:
 
