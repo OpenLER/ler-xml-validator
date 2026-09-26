@@ -16,9 +16,9 @@ def print_violation(violation: Violation) -> None:
     location = f" at {violation.location}" if violation.location else ""
     line = f" line {violation.line}" if violation.line else ""
 
-    severity = " (warning)" if violation.severity == "warning" else ""
+    marker = "[WRN]" if violation.severity == "warning" else "[ERR]"
 
-    print(f"{violation.code}{severity}: {violation.message}{location}{line}")
+    print(f"{marker} {violation.code}: {violation.message}{location}{line}")
 
 
 def run_validate(path: Path, mode: str, version: str | None = None) -> int:
@@ -36,7 +36,20 @@ def run_validate(path: Path, mode: str, version: str | None = None) -> int:
     for violation in violations:
         print_violation(violation)
 
-    return 1 if any(v.severity == "error" for v in violations) else 0
+    n_errors = sum(v.severity == "error" for v in violations)
+    n_warnings = len(violations) - n_errors
+    print(summary(n_errors, n_warnings, version))
+
+    return 1 if n_errors else 0
+
+
+def summary(n_errors: int, n_warnings: int, version: str | None) -> str:
+    against = f" efter LER {version}" if version else ""
+    warnings = f"{n_warnings} advarsel" if n_warnings == 1 else f"{n_warnings} advarsler"
+    if n_errors:
+        counts = f"{n_errors} fejl" + (f", {warnings}" if n_warnings else "")
+        return f"Ugyldig{against}: {counts}"
+    return f"Gyldig{against}" + (f" ({warnings})" if n_warnings else "")
 
 
 def main(argv: list[str] | None = None) -> int:

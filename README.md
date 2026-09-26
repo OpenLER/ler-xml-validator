@@ -14,16 +14,15 @@ begge har `noejagtighedsklasse` sat til nil:
 
 ```console
 $ lerxml validate --version 2.1.0 example_xml/elledning_2022.xml
-$ echo $?
-0
+Gyldig efter LER 2.1.0
 
 $ lerxml validate --version 2.1.0 example_xml/elledning_2024.xml
-nøjagtighedsklasseVoidrestriktion: nøjagtighedsklasseVoidrestriktion at /ler:Elledning
-$ echo $?
-1
+[ERR] nøjagtighedsklasseVoidrestriktion: nøjagtighedsklasseVoidrestriktion at /ler:Elledning
+Ugyldig efter LER 2.1.0: 1 fejl
 ```
 
-Hver fejl skrives på én linje med fejlkode, besked og placering. Exit code er
+Hver violation skrives på én linje med `[ERR]` (fejl) eller `[WRN]` (advarsel),
+fejlkode, besked og placering. Sidste linje er en opsummering. Exit code er
 0, hvis filen er gyldig, og 1, hvis der er fejl. Kommandoerne `xsd`, `xta` og
 `geometri` kører kun ét af tjekkene.
 
