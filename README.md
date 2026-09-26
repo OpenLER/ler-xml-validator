@@ -166,6 +166,12 @@ restriktionerne. Mit repo [lerbogen](https://github.com/OpenLER/lerbogen)
 parser dem ud af docx-filerne (se [hvorfor docx og ikke en kildefil](https://github.com/OpenLER/lerbogen#hvorfor-parse-docx-og-ikke-en-kildefil))
 og gemmer dem i [fkdump](https://github.com/OpenLER/lerbogen/tree/main/fkdump), én YAML-fil pr. featuretype pr. version.
 
+### Hvor kommer XSD-filerne fra?
+
+`src/lerxml/xsd/` er en kopi fra lerbogen: `versions/<version>/schemas/` bliver til
+`xsd/<version>/`, og `schemas/http/` og `schemas/https/` (GML, xlink m.fl.) bliver til
+`xsd/http/` og `xsd/https/`. Kommer der en ny LER-version, kopieres den derfra.
+
 ### Hvad gør build_xta.py?
 
 Den bruges alene til at opdatere filer, der allerede er committed til repo. Så med mindre du udvikler/debugger på dette repo, så er der ingen grund til at køre den. 
