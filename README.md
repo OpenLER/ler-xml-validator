@@ -71,7 +71,7 @@ giver stadig exit code 0. Kun `Graveforespoergselssvar` har `schemaVersion`.
 |---|---|---|
 | `xsd.py` | XML Schema for den valgte version | `XSD`, `W1` |
 | `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn |
-| `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `GEOM1`, `GEOM2` |
+| `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `GEOM1`–`GEOM3` |
 | `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i LER-bogen) |
 
 G1–G4 er beskrevet under "Andre krav" i [LER-bogen](https://openler.github.io/lerbogen/). G3 (XML-kommentarer)

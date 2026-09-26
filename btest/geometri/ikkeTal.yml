@@ -1,0 +1,8 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: posList indeholder noget, der ikke er et tal
+    xquery: |-
+      replace value of node $doc//gml:posList with
+        "700000 6200000 -99 700010 abc -99"
+    assertions: [GEOM3, XSD]

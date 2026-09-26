@@ -28,16 +28,28 @@ def _find_dimension(elem: _Element) -> int:
     return 2
 
 
-def _parse_points(elem: _Element) -> list[tuple[float, ...]] | None:
-    dim = _find_dimension(elem)
-    values = [float(v) for v in (elem.text or "").split()]
+def _group_points(values: list[float], dim: int) -> list[tuple[float, ...]] | None:
     if dim <= 0 or len(values) % dim != 0:
         return None
     return [tuple(values[i:i + dim]) for i in range(0, len(values), dim)]
 
 
 def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[Violation]:
-    points = _parse_points(elem)
+    try:
+        values = [float(v) for v in (elem.text or "").split()]
+    except ValueError:
+        yield Violation(
+            code="GEOM3",
+            message="posList indeholder noget, der ikke er et tal",
+            xpath=doc.getpath(elem),
+            line=elem.sourceline,
+        )
+        return
+    try:
+        dim = _find_dimension(elem)
+    except ValueError:
+        return  # srsDimension er ikke et heltal; det fanger XSD'en
+    points = _group_points(values, dim)
     if points is None:
         yield Violation(
             code="GEOM2",
