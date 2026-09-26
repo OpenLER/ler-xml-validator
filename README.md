@@ -50,7 +50,9 @@ report.violations  # liste af Violation(code, message, location, line, ...)
 ```
 
 Versionen skal altid angives. Hvis dokumentets `schemaVersion` ikke passer
-med den angivne version, gives en advarsel.
+med den angivne version, gives advarslen `W1`. Den kommer med i rapporten som
+en `Violation` med `severity="warning"`, men gør ikke filen ugyldig, og CLI'en
+giver stadig exit code 0. Kun `Graveforespoergselssvar` har `schemaVersion`.
 
 ## Hvad bliver tjekket?
 

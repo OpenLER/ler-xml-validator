@@ -1,4 +1,3 @@
-import warnings
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -57,24 +56,29 @@ def resolve_schema_version(raw: str) -> str:
     return raw
 
 
-def warn_if_schema_version_mismatch(doc: _ElementTree, version: str) -> None:
+def check_schema_version(doc: _ElementTree, version: str) -> Iterator[Violation]:
     """Warn when the root element's schemaVersion attribute (if present) disagrees
-    with the version being validated against. Fragments (e.g. a single feature)
-    have no schemaVersion attribute, so there is nothing to compare there."""
-    raw = doc.getroot().get("schemaVersion")
+    with the version being validated against. Only Graveforespoergselssvar carries
+    schemaVersion; fragments (e.g. a single feature) have none, so there is nothing
+    to compare there."""
+    root = doc.getroot()
+    raw = root.get("schemaVersion")
     if raw is None:
         return
     doc_version = resolve_schema_version(raw)
     if doc_version != version:
-        warnings.warn(
-            f"validating against LER version {version!r}, but document's schemaVersion "
-            f"attribute is {raw!r} (resolved: {doc_version!r})",
-            stacklevel=3,
+        yield Violation(
+            code="W1",
+            message=(
+                f"der valideres efter LER {version}, men dokumentets schemaVersion er "
+                f"{raw!r} ({doc_version})"
+            ),
+            severity="warning",
+            location=doc.getpath(root),
         )
 
 
 def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
-    warn_if_schema_version_mismatch(doc, version)
     for err in get_schema(version).iter_errors(doc):
         yield Violation(
             code="E1",

@@ -16,7 +16,9 @@ def print_violation(violation: Violation) -> None:
     location = f" at {violation.location}" if violation.location else ""
     line = f" line {violation.line}" if violation.line else ""
 
-    print(f"{violation.code}: {violation.message}{location}{line}")
+    severity = " (warning)" if violation.severity == "warning" else ""
+
+    print(f"{violation.code}{severity}: {violation.message}{location}{line}")
 
 
 def run_validate(path: Path, mode: str, version: str | None = None) -> int:
@@ -34,7 +36,7 @@ def run_validate(path: Path, mode: str, version: str | None = None) -> int:
     for violation in violations:
         print_violation(violation)
 
-    return 1 if violations else 0
+    return 1 if any(v.severity == "error" for v in violations) else 0
 
 
 def main(argv: list[str] | None = None) -> int:

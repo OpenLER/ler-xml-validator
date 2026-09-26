@@ -70,6 +70,7 @@ from . import geometri, xlink, xsd, xta  # noqa: E402
 
 def validate(doc: _ElementTree, version: str) -> Report:
     violations = list(chain(
+        xsd.check_schema_version(doc, version),
         xsd.validate(doc, version),
         xta.validate(doc, version),
         geometri.validate(doc),

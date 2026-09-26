@@ -35,7 +35,7 @@ from lxml import etree
 from lxml.etree import _ElementTree
 
 from . import Violation
-from .xsd import get_schema, warn_if_schema_version_mismatch
+from .xsd import get_schema
 
 XTA_DIR = files("lerxml") / "xta"
 
@@ -226,7 +226,6 @@ def _evaluate(expr: str, node, root_node, variables: dict) -> object:
 
 
 def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
-    warn_if_schema_version_mismatch(doc, version)
     cache = get_cache(version)
 
     # Building elementpath's node-tree wrapper is O(document size); doing it once
