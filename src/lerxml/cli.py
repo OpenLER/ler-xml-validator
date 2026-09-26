@@ -16,7 +16,7 @@ def print_violation(violation: Violation) -> None:
     xpath = f" at {violation.xpath}" if violation.xpath else ""
     line = f" line {violation.line}" if violation.line else ""
 
-    marker = "[WRN]" if violation.severity == "warning" else "[ERR]"
+    marker = {"error": "[ERR]", "warning": "[WRN]", "info": "[INF]"}[violation.severity]
 
     message = f": {violation.message}" if violation.message else ""
 
@@ -39,7 +39,7 @@ def run_validate(path: Path, mode: str, version: str | None = None) -> int:
         print_violation(violation)
 
     n_errors = sum(v.severity == "error" for v in violations)
-    n_warnings = len(violations) - n_errors
+    n_warnings = sum(v.severity == "warning" for v in violations)
     print(summary(n_errors, n_warnings, version))
 
     return 1 if n_errors else 0

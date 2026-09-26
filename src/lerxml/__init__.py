@@ -11,9 +11,9 @@ from lxml.etree import _ElementTree
 
 @dataclass
 class Violation:
-    code: str  # XSD, G4, GEOM1, W1, or a restriction name from the feature catalogue
+    code: str  # XSD, G3, G4, GEOM1, W1, or a restriction name from the feature catalogue
     message: str | None = None  # shown next to code, so must not repeat it; None if code says it all
-    severity: Literal["error", "warning"] = "error"
+    severity: Literal["error", "warning", "info"] = "error"
     verbose_message: str | None = None
     xpath: str | None = None  # XPath to node (if available)
     line: int | None = None   # line number (if available)
@@ -65,7 +65,7 @@ class Report:
 
 # Imported after Violation/Report are defined: these submodules do `from . import
 # Violation` at import time, which requires the class to already exist in this module.
-from . import geometri, xlink, xsd, xta  # noqa: E402
+from . import geometri, kommentarer, xlink, xsd, xta  # noqa: E402
 
 
 def validate(doc: _ElementTree, version: str) -> Report:
@@ -75,6 +75,7 @@ def validate(doc: _ElementTree, version: str) -> Report:
         xta.validate(doc, version),
         geometri.validate(doc),
         xlink.validate(doc),
+        kommentarer.validate(doc),
     ))
     return Report(ler_version=version, lerxml_version=LERXML_VERSION, violations=violations)
 

@@ -1,0 +1,6 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: kommentar i feature
+    xquery: insert node comment { "en kommentar" } as first into $doc/*[1]
+    assertions: [G3]

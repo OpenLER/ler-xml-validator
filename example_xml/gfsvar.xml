@@ -9,6 +9,7 @@
   <ler:id>3f2b8c1e-7a4d-4e9b-9c2a-5d6e7f8a9b0c</ler:id>
   <ler:type>ledningsoplysninger udleveret</ler:type>
 
+  <!-- Eksempel: fejl af forskellig slags på tre ledninger -->
   <ler:ledningMember>
     <ler:Elledning gml:id="elledning-001">
       <ler:driftsstatus>i drift</ler:driftsstatus>
