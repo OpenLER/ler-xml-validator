@@ -1,12 +1,14 @@
 <ler:Elledning
     xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
     xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     gml:id="elledning-001">
 
   <ler:driftsstatus>i drift</ler:driftsstatus>
   <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
   <ler:fareklasse>ikke farlig</ler:fareklasse>
+  <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
 
   <ler:geometri >
     <gml:LineString srsName="EPSG:25832">
