@@ -37,6 +37,18 @@ Nøjagtighedsklassen må ikke være nil, hvis etableringstidspunktet ligger efte
 skæringsdatoen (2023-07-01). I 2.2.0 kom `noejagtighedsklasseVertikal` til, og
 den mangler i begge filer.
 
+`gfsvar.xml` er et graveforespørgselssvar med tre ledninger og fejl af forskellig
+slags: XSD (`E1`), restriktioner fra featurekataloget og geometri.
+
+```console
+$ lerxml validate --version 2.2.0 example_xml/gfsvar.xml
+[ERR] E1: value must be one of ['afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand'] at /ler:Graveforespoergselssvar/ler:ledningMember[3]/ler:Foeringsroer/ler:forsyningsart line 90
+[ERR] nøjagtighedsklasseVoidrestriktion at /ler:Graveforespoergselssvar/ler:ledningMember[1]/ler:Elledning line 13
+[ERR] vejledendeDybdeMåleenhedsrestriktion at /ler:Graveforespoergselssvar/ler:ledningMember[2]/ler:Vandledning line 39
+[ERR] GEOM1: Geometrien krydser/rører sig selv at /ler:Graveforespoergselssvar/ler:ledningMember[2]/ler:Vandledning/ler:geometri/gml:LineString/gml:posList line 51
+Ugyldig efter LER 2.2.0: 4 fejl
+```
+
 Fra Python:
 
 ```python

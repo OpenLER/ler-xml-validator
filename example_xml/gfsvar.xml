@@ -1,0 +1,94 @@
+<ler:Graveforespoergselssvar
+    xmlns:ler="http://data.gov.dk/schemas/LER/2/gml"
+    xmlns:gml="http://www.opengis.net/gml/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    gml:id="gsvar-001"
+    schemaVersion="2.2">
+
+  <ler:id>3f2b8c1e-7a4d-4e9b-9c2a-5d6e7f8a9b0c</ler:id>
+  <ler:type>ledningsoplysninger udleveret</ler:type>
+
+  <ler:ledningMember>
+    <ler:Elledning gml:id="elledning-001">
+      <ler:driftsstatus>i drift</ler:driftsstatus>
+      <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+      <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+      <ler:noejagtighedsklasse xsi:nil="true" nilReason="unknown"/>
+      <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal>
+
+      <ler:vejledendeDybde uom="mm">500</ler:vejledendeDybde>
+
+      <ler:geometri>
+        <gml:LineString srsName="http://www.opengis.net/def/crs/EPSG/0/7416">
+          <gml:posList srsDimension="3">
+            700000 6200000 12.5
+            700010 6200010 12.5
+          </gml:posList>
+        </gml:LineString>
+      </ler:geometri>
+
+      <ler:udvendigDiameter uom="mm">20</ler:udvendigDiameter>
+
+      <ler:type>vejbelysningskabel</ler:type>
+    </ler:Elledning>
+  </ler:ledningMember>
+
+  <ler:ledningMember>
+    <ler:Vandledning gml:id="vandledning-001">
+      <ler:driftsstatus>i drift</ler:driftsstatus>
+      <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+      <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+      <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
+      <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal>
+
+      <ler:vejledendeDybde uom="cm">80</ler:vejledendeDybde>
+
+      <ler:geometri>
+        <gml:LineString srsName="http://www.opengis.net/def/crs/EPSG/0/7416">
+          <gml:posList srsDimension="3">
+            700100 6200000 12.5
+            700110 6200010 12.5
+            700110 6200000 12.5
+            700100 6200010 12.5
+          </gml:posList>
+        </gml:LineString>
+      </ler:geometri>
+
+      <ler:udvendigDiameter uom="mm">110</ler:udvendigDiameter>
+
+      <ler:tvaersnitsform>cirkulær</ler:tvaersnitsform>
+    </ler:Vandledning>
+  </ler:ledningMember>
+
+  <ler:ledningMember>
+    <ler:Foeringsroer gml:id="foeringsroer-001">
+      <ler:driftsstatus>i drift</ler:driftsstatus>
+      <ler:etableringstidspunkt>2024-01-01</ler:etableringstidspunkt>
+      <ler:fareklasse>ikke farlig</ler:fareklasse>
+
+      <ler:noejagtighedsklasse>&lt;= 0.25 m</ler:noejagtighedsklasse>
+      <ler:noejagtighedsklasseVertikal>&lt;= 0.25 m</ler:noejagtighedsklasseVertikal>
+
+      <ler:vejledendeDybde uom="mm">500</ler:vejledendeDybde>
+
+      <ler:geometri>
+        <gml:LineString srsName="http://www.opengis.net/def/crs/EPSG/0/7416">
+          <gml:posList srsDimension="3">
+            700200 6200000 12.5
+            700210 6200010 12.5
+          </gml:posList>
+        </gml:LineString>
+      </ler:geometri>
+
+      <ler:udvendigDiameter uom="mm">100</ler:udvendigDiameter>
+
+      <ler:tvaersnitsform>cirkulær</ler:tvaersnitsform>
+
+      <ler:forsyningsart>ukendt</ler:forsyningsart>
+    </ler:Foeringsroer>
+  </ler:ledningMember>
+
+</ler:Graveforespoergselssvar>
