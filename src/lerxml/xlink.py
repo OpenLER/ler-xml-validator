@@ -23,7 +23,7 @@ def validate(doc: _ElementTree) -> Iterator[Violation]:
         code="G4",
         message="xmlns:xlink er ikke deklareret i dokumentet",
         verbose_message="Se LER-bogen, 'Andre krav', G4.",
-        location=doc.getpath(doc.getroot()),
+        xpath=doc.getpath(doc.getroot()),
     )
 
 

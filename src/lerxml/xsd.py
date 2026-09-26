@@ -74,7 +74,7 @@ def check_schema_version(doc: _ElementTree, version: str) -> Iterator[Violation]
                 f"{raw!r} ({doc_version})"
             ),
             severity="warning",
-            location=doc.getpath(root),
+            xpath=doc.getpath(root),
         )
 
 
@@ -84,8 +84,8 @@ def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
             code="E1",
             message=err.reason,
             verbose_message=str(err),
-            location=err.path,
-            line=getattr(err, "position", (None, None))[0],
+            xpath=err.path,
+            line=err.sourceline,
         )
 
 def validate_file(path: str | Path, version: str) -> Iterator[Violation]:

@@ -13,12 +13,12 @@ def parse_xml(path: Path) -> etree._ElementTree:
 
 
 def print_violation(violation: Violation) -> None:
-    location = f" at {violation.location}" if violation.location else ""
+    xpath = f" at {violation.xpath}" if violation.xpath else ""
     line = f" line {violation.line}" if violation.line else ""
 
     marker = "[WRN]" if violation.severity == "warning" else "[ERR]"
 
-    print(f"{marker} {violation.code}: {violation.message}{location}{line}")
+    print(f"{marker} {violation.code}: {violation.message}{xpath}{line}")
 
 
 def run_validate(path: Path, mode: str, version: str | None = None) -> int:

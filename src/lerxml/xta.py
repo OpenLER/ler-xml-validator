@@ -255,7 +255,7 @@ def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
                     yield Violation(
                         code=assertion["name"],
                         message="; ".join(sub["message"] for sub in failed),
-                        location=doc.getpath(elem),
+                        xpath=doc.getpath(elem),
                         sub_codes=[sub["name"] for sub in failed],
                     )
                 continue
@@ -265,7 +265,7 @@ def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
                 yield Violation(
                     code=assertion["name"],
                     message=assertion["name"],
-                    location=doc.getpath(elem),
+                    xpath=doc.getpath(elem),
                 )
 
 

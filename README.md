@@ -45,7 +45,7 @@ import lerxml
 
 report = lerxml.validate(etree.parse("fil.xml"), "2.2.0")
 report.valid       # True/False
-report.violations  # liste af Violation(code, message, location, line, ...)
+report.violations  # liste af Violation(code, message, xpath, line, ...)
 ```
 
 Versionen skal altid angives. Hvis dokumentets `schemaVersion` ikke passer
