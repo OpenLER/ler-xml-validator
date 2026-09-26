@@ -41,7 +41,7 @@ Example:
   branches:
     - name: mangler_driftsstatus
       xquery: delete node $doc//ler:driftsstatus
-      assertions: [E1]
+      assertions: [XSD]
     - name: driftsstatus_ukendt
       xquery: replace node $doc//ler:driftsstatus with <ler:driftsstatus xsi:nil="true"/>
       assertions: []

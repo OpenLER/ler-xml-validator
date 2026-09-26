@@ -38,11 +38,11 @@ skæringsdatoen (2023-07-01). I 2.2.0 kom `noejagtighedsklasseVertikal` til, og
 den mangler i begge filer.
 
 `gfsvar.xml` er et graveforespørgselssvar med tre ledninger og fejl af forskellig
-slags: XSD (`E1`), restriktioner fra featurekataloget og geometri.
+slags: XSD, restriktioner fra featurekataloget og geometri.
 
 ```console
 $ lerxml validate --version 2.2.0 example_xml/gfsvar.xml
-[ERR] E1: value must be one of ['afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand'] at /ler:Graveforespoergselssvar/ler:ledningMember[3]/ler:Foeringsroer/ler:forsyningsart line 90
+[ERR] XSD: value must be one of ['afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand'] at /ler:Graveforespoergselssvar/ler:ledningMember[3]/ler:Foeringsroer/ler:forsyningsart line 90
 [ERR] nøjagtighedsklasseVoidrestriktion at /ler:Graveforespoergselssvar/ler:ledningMember[1]/ler:Elledning line 13
 [ERR] vejledendeDybdeMåleenhedsrestriktion at /ler:Graveforespoergselssvar/ler:ledningMember[2]/ler:Vandledning line 39
 [ERR] GEOM1: Geometrien krydser/rører sig selv at /ler:Graveforespoergselssvar/ler:ledningMember[2]/ler:Vandledning/ler:geometri/gml:LineString/gml:posList line 51
@@ -69,7 +69,7 @@ giver stadig exit code 0. Kun `Graveforespoergselssvar` har `schemaVersion`.
 
 | Modul | Tjekker | Fejlkoder |
 |---|---|---|
-| `xsd.py` | XML Schema for den valgte version | `E1` |
+| `xsd.py` | XML Schema for den valgte version | `XSD`, `W1` |
 | `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn |
 | `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `GEOM1`, `GEOM2` |
 | `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i LER-bogen) |

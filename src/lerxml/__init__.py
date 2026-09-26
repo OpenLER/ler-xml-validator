@@ -11,7 +11,7 @@ from lxml.etree import _ElementTree
 
 @dataclass
 class Violation:
-    code: str  # E1, EL1, TL1, TL2, etc.
+    code: str  # XSD, G4, GEOM1, W1, or a restriction name from the feature catalogue
     message: str | None = None  # shown next to code, so must not repeat it; None if code says it all
     severity: Literal["error", "warning"] = "error"
     verbose_message: str | None = None

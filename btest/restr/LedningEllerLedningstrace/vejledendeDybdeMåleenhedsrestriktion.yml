@@ -3,7 +3,7 @@ assertions: []
 branches:
   - name: delete driftsstatus element
     xquery: delete node $doc//ler:driftsstatus
-    assertions: [E1]
+    assertions: [XSD]
 
   - name: set driftsstatus nil
     xquery: |-

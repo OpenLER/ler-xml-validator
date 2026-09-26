@@ -82,7 +82,7 @@ def check_schema_version(doc: _ElementTree, version: str) -> Iterator[Violation]
 def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
     for err in get_schema(version).iter_errors(doc):
         yield Violation(
-            code="E1",
+            code="XSD",
             message=err.reason,
             verbose_message=str(err),
             xpath=err.path,
