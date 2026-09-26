@@ -43,6 +43,7 @@ def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[Violation]:
             code="GEOM2",
             message="Antallet af tal i posList er ikke deleligt med srsDimension",
             xpath=doc.getpath(elem),
+            line=elem.sourceline,
         )
         return
     if len(points) < 2:
@@ -59,6 +60,7 @@ def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[Violation]:
             code="GEOM1",
             message="Geometrien krydser/rører sig selv",
             xpath=doc.getpath(elem),
+            line=elem.sourceline,
         )
 
 

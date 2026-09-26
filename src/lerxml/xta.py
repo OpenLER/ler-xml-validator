@@ -256,6 +256,7 @@ def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
                         code=assertion["name"],
                         message="; ".join(sub["message"] for sub in failed),
                         xpath=doc.getpath(elem),
+                        line=elem.sourceline,
                         sub_codes=[sub["name"] for sub in failed],
                     )
                 continue
@@ -266,6 +267,7 @@ def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
                     code=assertion["name"],
                     message=assertion["name"],
                     xpath=doc.getpath(elem),
+                    line=elem.sourceline,
                 )
 
 

@@ -75,6 +75,7 @@ def check_schema_version(doc: _ElementTree, version: str) -> Iterator[Violation]
             ),
             severity="warning",
             xpath=doc.getpath(root),
+            line=root.sourceline,
         )
 
 

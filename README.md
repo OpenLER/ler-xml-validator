@@ -17,7 +17,7 @@ $ lerxml validate --version 2.1.0 example_xml/elledning_2022.xml
 Gyldig efter LER 2.1.0
 
 $ lerxml validate --version 2.1.0 example_xml/elledning_2024.xml
-[ERR] nøjagtighedsklasseVoidrestriktion: nøjagtighedsklasseVoidrestriktion at /ler:Elledning
+[ERR] nøjagtighedsklasseVoidrestriktion: nøjagtighedsklasseVoidrestriktion at /ler:Elledning line 6
 Ugyldig efter LER 2.1.0: 1 fejl
 ```
 
