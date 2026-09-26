@@ -38,18 +38,21 @@ skæringsdatoen (2023-07-01). I 2.2.0 kom `noejagtighedsklasseVertikal` til, og
 den mangler i begge filer.
 
 `gfsvar.xml` er et graveforespørgselssvar med tre ledninger og fejl af forskellig
-slags: XSD, restriktioner fra featurekataloget og geometri. Den indeholder også en
+slags: restriktioner fra featurekataloget og geometri. Den indeholder også en
 kommentar, som giver oplysningen `G3`.
 
 ```console
 $ lerxml validate --version 2.2.0 example_xml/gfsvar.xml
-[ERR] XSD: value must be one of ['afløb', 'el', 'fjernvarme/fjernkøling', 'gas', 'olie', 'telekommunikation', 'vand'] at /ler:Graveforespoergselssvar/ler:ledningMember[3]/ler:Foeringsroer/ler:forsyningsart line 91
 [ERR] nøjagtighedsklasseVoidrestriktion at /ler:Graveforespoergselssvar/ler:ledningMember[1]/ler:Elledning line 14
 [ERR] vejledendeDybdeMåleenhedsrestriktion at /ler:Graveforespoergselssvar/ler:ledningMember[2]/ler:Vandledning line 40
 [ERR] GEOM1: Geometrien krydser/rører sig selv at /ler:Graveforespoergselssvar/ler:ledningMember[2]/ler:Vandledning/ler:geometri/gml:LineString/gml:posList line 52
 [INF] G3: dokumentet indeholder 1 XML-kommentar (LER har tidligere haft problemer med kommentarer) at /ler:Graveforespoergselssvar/comment() line 12
-Ugyldig efter LER 2.2.0: 4 fejl
+Ugyldig efter LER 2.2.0: 3 fejl
 ```
+
+Restriktionerne fra featurekataloget bygger på XSD-typerne og forudsætter, at
+dokumentet overholder XSD'en, så de tjekkes kun, hvis der ikke er XSD-fejl. Ellers
+gives oplysningen `XTA`.
 
 Fra Python:
 
@@ -72,7 +75,7 @@ giver stadig exit code 0. Kun `Graveforespoergselssvar` har `schemaVersion`.
 | Modul | Tjekker | Fejlkoder |
 |---|---|---|
 | `xsd.py` | XML Schema for den valgte version | `XSD`, `W1` |
-| `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn |
+| `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn, `XTA` (oplysning) |
 | `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `GEOM1`–`GEOM3` |
 | `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i LER-bogen) |
 | `kommentarer.py` | Om dokumentet indeholder XML-kommentarer | `G3` (oplysning) |

@@ -1,4 +1,5 @@
 import subprocess
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
 from importlib.metadata import PackageNotFoundError, version as _pkg_version
 from itertools import chain
@@ -11,7 +12,7 @@ from lxml.etree import _ElementTree
 
 @dataclass
 class Violation:
-    code: str  # XSD, G3, G4, GEOM1, W1, or a restriction name from the feature catalogue
+    code: str  # XSD, XTA, G3, G4, GEOM1, W1, or a restriction name from the feature catalogue
     message: str | None = None  # shown next to code, so must not repeat it; None if code says it all
     severity: Literal["error", "warning", "info"] = "error"
     verbose_message: str | None = None
@@ -69,10 +70,22 @@ from . import geometri, kommentarer, xlink, xsd, xta  # noqa: E402
 
 
 def validate(doc: _ElementTree, version: str) -> Report:
+    # xta's expressions assume the structure the XSD guarantees (cardinalities, types),
+    # so on an XSD-invalid document they either crash or give meaningless results.
+    xsd_violations = list(xsd.validate(doc, version))
+    if xsd_violations:
+        xta_violations: Iterable[Violation] = [Violation(
+            code="XTA",
+            message="restriktionerne fra featurekataloget er ikke tjekket, fordi dokumentet har XSD-fejl",
+            severity="info",
+        )]
+    else:
+        xta_violations = xta.validate(doc, version)
+
     violations = list(chain(
         xsd.check_schema_version(doc, version),
-        xsd.validate(doc, version),
-        xta.validate(doc, version),
+        xsd_violations,
+        xta_violations,
         geometri.validate(doc),
         xlink.validate(doc),
         kommentarer.validate(doc),
