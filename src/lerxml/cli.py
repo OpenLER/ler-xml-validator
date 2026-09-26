@@ -18,7 +18,9 @@ def print_violation(violation: Violation) -> None:
 
     marker = "[WRN]" if violation.severity == "warning" else "[ERR]"
 
-    print(f"{marker} {violation.code}: {violation.message}{xpath}{line}")
+    message = f": {violation.message}" if violation.message else ""
+
+    print(f"{marker} {violation.code}{message}{xpath}{line}")
 
 
 def run_validate(path: Path, mode: str, version: str | None = None) -> int:

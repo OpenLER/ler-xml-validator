@@ -265,7 +265,6 @@ def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:
             if not ok:
                 yield Violation(
                     code=assertion["name"],
-                    message=assertion["name"],
                     xpath=doc.getpath(elem),
                     line=elem.sourceline,
                 )

@@ -17,12 +17,12 @@ $ lerxml validate --version 2.1.0 example_xml/elledning_2022.xml
 Gyldig efter LER 2.1.0
 
 $ lerxml validate --version 2.1.0 example_xml/elledning_2024.xml
-[ERR] nøjagtighedsklasseVoidrestriktion: nøjagtighedsklasseVoidrestriktion at /ler:Elledning line 6
+[ERR] nøjagtighedsklasseVoidrestriktion at /ler:Elledning line 6
 Ugyldig efter LER 2.1.0: 1 fejl
 ```
 
 Hver violation skrives på én linje med `[ERR]` (fejl) eller `[WRN]` (advarsel),
-fejlkode, besked og placering. Sidste linje er en opsummering. Exit code er
+fejlkode, evt. en kort besked og placering. Sidste linje er en opsummering. Exit code er
 0, hvis filen er gyldig, og 1, hvis der er fejl. Kommandoerne `xsd`, `xta` og
 `geometri` kører kun ét af tjekkene.
 
