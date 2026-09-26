@@ -47,3 +47,56 @@ Det var uden tvivl den rigtige beslutning.
 
 xta er så simpel i struktur, at man relativt let ville kunne implementere
 det i andre sprog.
+
+## Konkrete mangler i pyschematron
+
+Et eksempel på det, der ikke var implementeret: `role`-attributten på
+`<assert>`/`<report>` blev ikke ført videre til SVRL-outputtet
+(pyschematron 1.1.16+issue16fix). ISO Schematron bruger `role` til at
+markere, at en regel er mindre alvorlig end en fejl, fx `role="warning"`.
+
+```xml
+<assert id="test1" role="warning" test="false()">a warning</assert>
+```
+
+gav i SVRL, uden `role`:
+
+```xml
+<svrl:failed-assert id="test1" location="..." test="false()">
+  <svrl:text>a warning</svrl:text>
+</svrl:failed-assert>
+```
+
+Den daværende `lerxml/schematron.py` læste kun `id`, `svrl:text` og
+`location` fra SVRL'en, så en advarsel opførte sig som en almindelig fejl.
+Den eneste udvej havde været selv at slå `role` op i `.sch`-kilden og matche
+på `id`.
+
+## Saxon som reference
+
+Når pyschematron opførte sig overraskende, sammenlignede jeg med Saxon, som
+er det nærmeste man kommer en referenceimplementation af Schematron (via
+XSLT). Saxon kører i JVM og vedligeholdes af Saxonica, hvor Michael Kay, en
+af de centrale personer bag XPath og XSLT, står bag. Saxon HE er open
+source; PE og EE kræver licens.
+
+Opsætningen var tung:
+
+```sh
+sudo apt install libsaxonhe-java
+# wrapper: ~/.local/bin/saxon
+#   exec java -jar /usr/share/java/Saxon-HE.jar "$@"
+
+git clone https://codeberg.org/SchXslt/schxslt.git
+cd schxslt && mvn -pl cli -am package
+# wrapper: ~/.local/bin/schxslt
+#   exec java -jar ~/a/schxslt/cli/target/schxslt-cli.jar "$@"
+
+# .sch -> .xsl -> SVRL
+SCH_TO_XSL=~/a/schxslt/core/target/xslt-only/2.0/compile-for-svrl.xsl
+saxon -xsl:$SCH_TO_XSL -s:regler.sch -o:regler.xsl
+saxon -xsl:regler.xsl -s:dokument.xml -o:report.svrl
+
+# eller direkte
+schxslt -s regler.sch -d dokument.xml
+```
