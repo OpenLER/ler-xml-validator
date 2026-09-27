@@ -38,13 +38,7 @@ def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[Violation]:
     try:
         values = [float(v) for v in (elem.text or "").split()]
     except ValueError:
-        yield Violation(
-            code="GEOM3",
-            message="posList indeholder noget, der ikke er et tal",
-            xpath=doc.getpath(elem),
-            line=elem.sourceline,
-        )
-        return
+        return  # posList indeholder noget, der ikke er et tal; det fanger XSD'en
     try:
         dim = _find_dimension(elem)
     except ValueError:
