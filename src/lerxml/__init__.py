@@ -12,7 +12,7 @@ from lxml.etree import _ElementTree
 
 @dataclass
 class Violation:
-    code: str  # XSD, XTA, G3, G4, GEOM1, W1, or a restriction name from the feature catalogue
+    code: str  # XSD, XTA, G1, G3, G4, GEOM1, W1, or a restriction name from the feature catalogue
     message: str | None = None  # shown next to code, so must not repeat it; None if code says it all
     severity: Literal["error", "warning", "info"] = "error"
     verbose_message: str | None = None

@@ -1,0 +1,40 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: 2D-koordinater
+    xquery: |-
+      replace value of node $doc//gml:posList with
+        "700000 6200000 700010 6200010"
+    assertions: [G1]
+  - name: 2D-koordinater med srsDimension=2
+    xquery: |-
+      replace value of node $doc//gml:posList with "700000 6200000 700010 6200010",
+      replace value of node $doc//gml:posList/@srsDimension with "2"
+    assertions: [G1]
+  - name: antal tal går ikke op i 3
+    xquery: |-
+      replace value of node $doc//gml:posList with
+        "700000 6200000 -99 700010 6200010"
+    assertions: [G1]
+  - name: 3D uden srsDimension
+    xquery: delete node $doc//gml:posList/@srsDimension
+    assertions: []
+  - name: posList srsDimension=2 med 3D-koordinater
+    xquery: replace value of node $doc//gml:posList/@srsDimension with "2"
+    assertions: [G1]
+  - name: LineString og posList begge 3
+    xquery: insert node attribute srsDimension { "3" } into $doc//gml:LineString
+    assertions: []
+  - name: LineString 3, posList 2
+    xquery: |-
+      insert node attribute srsDimension { "3" } into $doc//gml:LineString,
+      replace value of node $doc//gml:posList/@srsDimension with "2"
+    assertions: [G1]
+  - name: LineString 2, posList 3
+    xquery: insert node attribute srsDimension { "2" } into $doc//gml:LineString
+    assertions: [G1]
+  - name: LineString 2, posList uden
+    xquery: |-
+      insert node attribute srsDimension { "2" } into $doc//gml:LineString,
+      delete node $doc//gml:posList/@srsDimension
+    assertions: [G1]
