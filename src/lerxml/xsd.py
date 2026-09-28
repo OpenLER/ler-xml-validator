@@ -44,39 +44,24 @@ def get_schema(version: str) -> xmlschema.XMLSchema:
     return _schemas[version]
 
 
-def resolve_schema_version(raw: str) -> str:
-    """Expand a bare X.Y schemaVersion attribute value to the X.Y.Z we validate against.
-
-    2.0 is a documented exception: 2.0.0 and 2.0.1 differ substantially, and
-    schemaVersion="2.0" always means 2.0.1 (see adr/903)."""
-    if raw == "2.0":
-        return "2.0.1"
-    if raw.count(".") == 1:
-        return f"{raw}.0"
-    return raw
-
-
 def check_schema_version(doc: _ElementTree, version: str) -> Iterator[Violation]:
-    """Warn when the root element's schemaVersion attribute (if present) disagrees
-    with the version being validated against. Only Graveforespoergselssvar carries
-    schemaVersion; fragments (e.g. a single feature) have none, so there is nothing
-    to compare there."""
+    """G8: warn unless the root element's schemaVersion attribute (if present) is
+    exactly the X.Y.Z being validated against. X.Y is not enough, since e.g. 2.0.0
+    and 2.0.1 share an XSD but differ in restrictions. Only Graveforespoergselssvar
+    carries schemaVersion; fragments (e.g. a single feature) have none, so there is
+    nothing to compare there."""
     root = doc.getroot()
     raw = root.get("schemaVersion")
-    if raw is None:
+    if raw is None or raw == version:
         return
-    doc_version = resolve_schema_version(raw)
-    if doc_version != version:
-        yield Violation(
-            code="W1",
-            message=(
-                f"der valideres efter LER {version}, men dokumentets schemaVersion er "
-                f"{raw!r} ({doc_version})"
-            ),
-            severity="warning",
-            xpath=doc.getpath(root),
-            line=root.sourceline,
-        )
+    yield Violation(
+        code="G8",
+        message=f"der valideres efter LER {version}, men dokumentets schemaVersion er {raw!r}",
+        severity="warning",
+        verbose_message="Se LER-bogen, 'Andre krav', G8.",
+        xpath=doc.getpath(root),
+        line=root.sourceline,
+    )
 
 
 def validate(doc: _ElementTree, version: str) -> Iterator[Violation]:

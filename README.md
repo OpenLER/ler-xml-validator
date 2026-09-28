@@ -66,7 +66,7 @@ report.violations  # liste af Violation(code, message, xpath, line, ...)
 ```
 
 Versionen skal altid angives. Hvis dokumentets `schemaVersion` ikke passer
-med den angivne version, gives advarslen `W1`. Den kommer med i rapporten som
+præcis (X.Y.Z) med den angivne version, gives advarslen `G8`. Den kommer med i rapporten som
 en `Violation` med `severity="warning"`, men gør ikke filen ugyldig, og CLI'en
 giver stadig exit code 0. Kun `Graveforespoergselssvar` har `schemaVersion`.
 
@@ -74,14 +74,14 @@ giver stadig exit code 0. Kun `Graveforespoergselssvar` har `schemaVersion`.
 
 | Modul | Tjekker | Fejlkoder |
 |---|---|---|
-| `xsd.py` | XML Schema for den valgte version | `XSD`, `W1` |
+| `xsd.py` | XML Schema for den valgte version | `XSD`, `G8` (advarsel) |
 | `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn, `XTA` (oplysning) |
 | `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `G1`, `GEOM1` |
 | `etableringstidspunkt.py` | LER's regel for `etableringstidspunkt`, og at datoen findes | `G5`, `G6` |
 | `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i LER-bogen) |
 | `kommentarer.py` | Om dokumentet indeholder XML-kommentarer | `G3` (oplysning) |
 
-G1–G6 er beskrevet under "Andre krav" i [LER-bogen](https://openler.github.io/lerbogen/). G3 siger, at
+G1–G8 er beskrevet under "Andre krav" i [LER-bogen](https://openler.github.io/lerbogen/). G3 siger, at
 XML-kommentarer ikke er tilladt. LER har tidligere haft problemer med kommentarer, men det er
 formentlig rettet, så lerxml melder det kun som en oplysning (`severity="info"`). Den gør ikke
 filen ugyldig, men kan være relevant, hvis LER afviser dokumentet af uforklarlige grunde.

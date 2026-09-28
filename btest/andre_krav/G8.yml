@@ -1,0 +1,12 @@
+source: $FT/Gsvar_trace.xml
+assertions: []
+branches:
+  - name: X.Y er ikke nok
+    xquery: replace value of node $doc/*/@schemaVersion with "2.2"
+    assertions: [G8]
+  - name: anden version
+    xquery: replace value of node $doc/*/@schemaVersion with "2.1.0"
+    assertions: [G8]
+  - name: noget der ikke er en version
+    xquery: replace value of node $doc/*/@schemaVersion with "foo"
+    assertions: [G8]

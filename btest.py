@@ -282,11 +282,12 @@ def run_tests(filter_str: str | None = None) -> list[FileResult]:
     from lerxml.etableringstidspunkt import validate_string as etableringstidspunkt_validate_string
     from lerxml.geometri import validate_string as geometri_validate_string
     from lerxml.kommentarer import validate_string as kommentarer_validate_string
-    from lerxml.xsd import LATEST_VERSION, validate_string as xsd_validate_string
+    from lerxml.xsd import LATEST_VERSION, check_schema_version, validate_string as xsd_validate_string
     from lerxml.xta import validate_string as xta_validate_string
 
     validators = [
         partial(xsd_validate_string, version=LATEST_VERSION),
+        lambda xml: check_schema_version(etree.ElementTree(etree.fromstring(xml.encode())), LATEST_VERSION),
         partial(xta_validate_string, version=LATEST_VERSION),
         geometri_validate_string,
         etableringstidspunkt_validate_string,

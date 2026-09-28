@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     gml:id="gsvar-001"
-    schemaVersion="2.2">
+    schemaVersion="2.2.0">
 
   <ler:id>GSVAR-001</ler:id>
   <ler:type>ledningsoplysninger udleveret</ler:type>
