@@ -1,0 +1,48 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: skudår
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-02-29"
+    assertions: []
+  - name: 30. februar
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-02-30"
+    assertions: [G6]
+  - name: 29. februar uden skudår
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2023-02-29"
+    assertions: [G6]
+  - name: 31. november
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-11-31"
+    assertions: [G6]
+  - name: måned 13
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-13-01"
+    assertions: [G6]
+  - name: måned 00
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-00-01"
+    assertions: [G6]
+  - name: dag 00
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-04-00"
+    assertions: [G6]
+  - name: år 0000
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "0000-01-01"
+    assertions: [G6]
+  - name: måned 13 uden dag
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-13"
+    assertions: [G6]
+  - name: år 0000 uden måned
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "0000"
+    assertions: [G6]
+  - name: 30. februar med before
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-02-30",
+      insert node attribute indeterminatePosition { "before" } into $doc//ler:etableringstidspunkt
+    assertions: [G6]

@@ -1,7 +1,10 @@
 """
-Tjekker etableringstidspunkt mod LER's EtableringstidspunktRule (G5).
+Tjekker etableringstidspunkt mod LER's EtableringstidspunktRule (G5), og at
+datoen findes (G6).
 
-Se LER-bogen, "Andre krav", G5. XSD'en fanger næsten intet her, fordi
+Se LER-bogen, "Andre krav", G5 og G6. G6 er ikke et krav fra LER-serveren, men
+LER regner en dato, der ikke findes, som før skæringsdatoen, så den slipper for
+kravene efter skæringsdatoen. XSD'en fanger næsten intet her, fordi
 gml:TimePositionType er en union, der indeholder anyURI.
 """
 
@@ -29,6 +32,21 @@ def _g5(doc: _ElementTree, elem: _Element, sub_code: str, message: str) -> Viola
         line=elem.sourceline,
         sub_codes=[sub_code],
     )
+
+
+def _exists(value: str) -> bool:
+    """Gyldig efter XML Schema 1.0 (xs:date, xs:gYearMonth, xs:gYear), som ikke har år 0000."""
+    parts = value.split("-")
+    if int(parts[0]) == 0:
+        return False
+    if len(parts) == 2:
+        return 1 <= int(parts[1]) <= 12
+    if len(parts) == 3:
+        try:
+            date.fromisoformat(value)
+        except ValueError:
+            return False
+    return True
 
 
 def _after_cutoff(value: str) -> bool:
@@ -63,6 +81,14 @@ def _check(doc: _ElementTree, elem: _Element) -> Iterator[Violation]:
     if not FORMAT_RE.fullmatch(value):
         yield _g5(doc, elem, "G5.1", f"{value!r} er ikke ÅÅÅÅ-MM-DD, ÅÅÅÅ-MM eller ÅÅÅÅ")
         return
+    if not _exists(value):
+        yield Violation(
+            code="G6",
+            message=f"{value!r} er ikke en dato, der findes",
+            verbose_message="Se LER-bogen, 'Andre krav', G6.",
+            xpath=doc.getpath(elem),
+            line=elem.sourceline,
+        )
 
     if position is None and value == CUTOFF_YEAR:
         yield _g5(doc, elem, "G5.3", f"året {value} er skæringsåret, så det kan ikke afgøres, om det er før eller efter skæringsdatoen")

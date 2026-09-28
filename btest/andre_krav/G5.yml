@@ -27,10 +27,6 @@ branches:
       replace value of node $doc//ler:etableringstidspunkt with "2023-07",
       insert node attribute indeterminatePosition { "before" } into $doc//ler:etableringstidspunkt
     assertions: []
-  - name: dato der ikke findes (G6, ikke G5)
-    xquery: |-
-      replace value of node $doc//ler:etableringstidspunkt with "2024-02-30"
-    assertions: []
   - name: G5.1 måned uden nul
     xquery: |-
       replace value of node $doc//ler:etableringstidspunkt with "2024-4"
