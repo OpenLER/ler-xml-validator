@@ -77,10 +77,11 @@ giver stadig exit code 0. Kun `Graveforespoergselssvar` har `schemaVersion`.
 | `xsd.py` | XML Schema for den valgte version | `XSD`, `W1` |
 | `xta.py` | Restriktionerne fra featurekataloget, udtrykt i XTA (`src/lerxml/xta/<version>/`) | Restriktionens navn, `XTA` (oplysning) |
 | `geometri.py` | Geometrikrav, som ikke let kan udtrykkes i XSD eller XTA | `G1`, `GEOM1` |
+| `etableringstidspunkt.py` | LER's regel for `etableringstidspunkt` | `G5` |
 | `xlink.py` | At `xmlns:xlink` er deklareret | `G4` (se "Andre krav" i LER-bogen) |
 | `kommentarer.py` | Om dokumentet indeholder XML-kommentarer | `G3` (oplysning) |
 
-G1–G4 er beskrevet under "Andre krav" i [LER-bogen](https://openler.github.io/lerbogen/). G3 siger, at
+G1–G5 er beskrevet under "Andre krav" i [LER-bogen](https://openler.github.io/lerbogen/). G3 siger, at
 XML-kommentarer ikke er tilladt. LER har tidligere haft problemer med kommentarer, men det er
 formentlig rettet, så lerxml melder det kun som en oplysning (`severity="info"`). Den gør ikke
 filen ugyldig, men kan være relevant, hvis LER afviser dokumentet af uforklarlige grunde.

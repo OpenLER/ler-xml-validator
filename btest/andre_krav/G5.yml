@@ -1,0 +1,109 @@
+source: $FT/Elledning24.xml
+assertions: []
+branches:
+  - name: dato
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-04-01"
+    assertions: []
+  - name: måned
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-04"
+    assertions: []
+  - name: år efter skæringsåret
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024"
+    assertions: []
+  - name: mellemrum omkring
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "  2024-04-01  "
+    assertions: []
+  - name: before + skæringsdatoen
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2023-07-01",
+      insert node attribute indeterminatePosition { "before" } into $doc//ler:etableringstidspunkt
+    assertions: []
+  - name: before + skæringsmåneden
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2023-07",
+      insert node attribute indeterminatePosition { "before" } into $doc//ler:etableringstidspunkt
+    assertions: []
+  - name: dato der ikke findes (G6, ikke G5)
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-02-30"
+    assertions: []
+  - name: G5.1 måned uden nul
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-4"
+    assertions: [G5]
+  - name: G5.1 uden bindestreger
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "20240401"
+    assertions: [G5]
+  - name: G5.1 dansk rækkefølge
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "01-04-2024"
+    assertions: [G5]
+  - name: G5.1 tidszone
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-04-01Z"
+    assertions: [G5]
+  - name: G5.1 klokkeslæt
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-04-01T12:00:00"
+    assertions: [G5]
+  - name: G5.1 tekst
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "april 2024"
+    assertions: [G5]
+  - name: G5.2 tom
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with ""
+    assertions: [G5]
+  - name: G5.2 tom med unknown
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "",
+      insert node attribute indeterminatePosition { "unknown" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.3 skæringsåret
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2023"
+    assertions: [G5]
+  - name: G5.4 after
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2020-01-01",
+      insert node attribute indeterminatePosition { "after" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.4 now
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2020-01-01",
+      insert node attribute indeterminatePosition { "now" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.4 unknown
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2020-01-01",
+      insert node attribute indeterminatePosition { "unknown" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.5 before + efter skæringsdatoen
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2024-04-01",
+      insert node attribute indeterminatePosition { "before" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.5 before + dagen efter
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2023-07-02",
+      insert node attribute indeterminatePosition { "before" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.5 before + måneden efter
+    xquery: |-
+      replace value of node $doc//ler:etableringstidspunkt with "2023-08",
+      insert node attribute indeterminatePosition { "before" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.6 calendarEraName
+    xquery: insert node attribute calendarEraName { "x" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: G5.6 tom calendarEraName
+    xquery: insert node attribute calendarEraName { "" } into $doc//ler:etableringstidspunkt
+    assertions: [G5]
+  - name: frame ignoreres
+    xquery: insert node attribute frame { "#foo" } into $doc//ler:etableringstidspunkt
+    assertions: []

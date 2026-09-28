@@ -264,7 +264,7 @@
   - name: isDate
     expression: matches($etab, '^\d{4}-\d{2}-\d{2}$')
   - name: afterCutoff
-    expression: 'if ($isDate) then xs:date($etab) gt xs:date(''2023-07-01'')
+    expression: 'if ($isDate and $etab castable as xs:date) then xs:date($etab) gt xs:date(''2023-07-01'')
 
       else if ($isYearMonth) then $etab gt ''2023-07''
 
