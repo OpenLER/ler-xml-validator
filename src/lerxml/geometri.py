@@ -44,15 +44,7 @@ def _check_pos_list(doc: _ElementTree, elem: _Element) -> Iterator[Violation]:
     except ValueError:
         return  # srsDimension er ikke et heltal; det fanger XSD'en
     points = _group_points(values, dim)
-    if points is None:
-        yield Violation(
-            code="GEOM2",
-            message="Antallet af tal i posList er ikke deleligt med srsDimension",
-            xpath=doc.getpath(elem),
-            line=elem.sourceline,
-        )
-        return
-    if len(points) < 2:
+    if points is None or len(points) < 2:
         return
 
     xy_points = [(p[0], p[1]) for p in points]
