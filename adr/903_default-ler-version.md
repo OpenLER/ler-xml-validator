@@ -1,15 +1,16 @@
 # 903 - Skal der være en default LER-version?
 
-I øjeblikket defaulter den til nyeste registrerede version.
-Det gælder for alle funktionskald, der tager et version argument.
+Tidligere defaultede den til nyeste registrerede version.
+Det gjaldt for alle funktionskald, der tager et version argument.
 E.g.:
 
     validate(doc: _ElementTree, version: str = xsd.DEFAULT_VERSION)
 
-Men det er egentligt lidt risky, der er måske noget client kode,
-der virker nu, men breaker når en ny LER-version udgives.
+Men det var egentligt lidt risky, der er måske noget client kode,
+der ville virke på et givent tidspunkt, men så ville breake
+når en ny LER-version udgives.
 
-Så jeg vil fjerne default.
+Så jeg besluttede at fjerne default.
 
 ## Hvorfor ikke bare afgøre version ud fra schemaVersion
 
@@ -22,7 +23,7 @@ En graveforespørgsel har XML, der starter cirka sådan her:
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     gml:id="gsvar-001"
-    schemaVersion="2.2">
+    schemaVersion="2.2.0">
 ```
 
 Og schema version kan aflæses fra attributten schemaVersion.
@@ -34,15 +35,6 @@ Men jeg har faktisk hele tiden været bevidst om, at jeg også
 vil have muligheden for at kalde den med brudstykker, fx
 xml for en enkelt feature. Og de har jo ikke nogen angivelse
 af schemaVersion.
-
-## Schema version bruger X.Y, ikke X.Y.Z
-
-Well... Normalt så betyder det sidste Z et fix, ikke
-ændring i regler eller design. Og det må ikke give breaking changes.
-
-Men så vidt jeg husker, så er der faktisk netop meget stor forskel
-på 2.0.0 og 2.0.1. Anyway, jeg tror roligt vi kan antage, at vi altid
-skal bruge 2.0.1, hvis schemaVersion=2.0.
 
 ## Beslutning 1 - Funktioner skal ikke have en default for version
 
